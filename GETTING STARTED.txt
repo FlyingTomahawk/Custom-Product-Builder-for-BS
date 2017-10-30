@@ -1,0 +1,216 @@
+Custom Product Builder 2.3 V1.0
+Support Forum http://forums.oscommerce.com/topic/319216-custom-product-builder/
+Originally programmed by TENCENTS http://addons.oscommerce.com/info/6328
+
+===============
+GETTING STARTED
+===============
+
+INTRODUCTION:
+The fundamental component of this builder is an existing osCommerce store.
+This builder is a product assembler/bundler that you can attach to
+your store, enabling your visitors to build (or bundle) their own
+products using products that are already in your catalog.
+
+NB: No support for downloadable/virtual products - yet!
+
+The builder is capable of building single products or bundling products
+directly to the shopping cart. The true mechanisms all come into play
+when building Single products, it is a complicated process, the result
+is a completely new product in your catalog that consists of products
+from your catalog. On the other hand, when building Bundled products
+the result is a bunch of products in the shopping cart, as if the visitor
+put them there one-by-one. The difference is that the power and intelligence
+of the builder has been used to compile that list of products. You
+can toggle the builder between these two modes in the builder options,
+see 'Assemble Components as a Single Product (No=Bundled)'.
+
+BUILDER OPTIONS: (admin -> custom products -> options)
+The first awesome thing you will notice about the builder is the
+plethora of controls you have at your disposal. Don't let these scare
+you, you might not even use 10% of them, but then you might just use
+90% - who knows, they're there for convenience and for some folk who
+are a little shy when it comes to diving into the code. That being said
+however it does not imply that the controls themselves are written (or
+worded) for dummies - as you will see for yourself. Future development
+will see these simplified and narrowed down. 
+
+NB: The options page is a multiple input form meaning that you can make
+as many changes as you want and then hit the 'update' button to save them
+all. In fact all the admin side builder forms work like this.
+
+FIRST STEPS - Things you should do in ADMIN before switching on the builder.
+----------------------------------------------------------------------------
+NOTE: Do not change anything else other than what is detailed in the following
+steps. After the first test has passed you can start experimenting with the options.
+
+STEP 1. Create a new product category for 'Assembly Fees'.
+
+STEP 2. Create a new product category for 'Built Products'.
+
+STEP 3. Create at least one new product in the new 'Assembly Fees' category.
+
+STEP 4. In Custom Products -> Options find 'osC Category for Assembly Fees' and set
+it to the new 'Assembly Fees' category you created in Step 1.
+
+STEP 5. In Custom Products -> Options find 'osC Category for Built Products' and set
+it to the new 'Built Products' category you created in Step 2.
+
+STEP 6. Always remember to click the 'update' button to save the changes.
+
+STEP 7. In Custom Products -> Categories set each of the builder categories 'Products
+category' fields to a product category in your catalog. Remember to click 'update' when
+you're done. Ignore dependence(s) for now, see footnotes for more detail.
+
+STEP 8. You're now ready to switch the builder on - in options,
+right at the top, set Enable Builder to 'yes' and click 'update'.
+
+Open your site's front-end with a browser. You should see the builder
+infobox down the left column - click on it. You might need to hit refresh a few
+times for all the graphics to load up properly. What you're seeing now is the
+builder in 'Singles' mode. The components list (just below the 'new product
+details') will eventually become the components (or attributes) of the completely
+new 'single' product that gets built. The 'new product details'; Build Name,
+Description, Image etc... are the identifying characteristics of the new 'single'
+product (like normal catalog products have) - the components themselves will become
+attributes in the osCommerce database and will simply be attached to this new product,
+that is why a 'builder product' looks exactly the same as a standard osCommerce product
+with attributes.
+
+TEST - BUILDING YOUR FIRST PRODUCT:
+Click on the first component 'Component 1'. A popup window should open listing all the
+items from the products category (including subcats) that you specified in Admin -> Custom
+Products -> Categories -> Component 1. Click on one of the items to select it, the window
+should close and the selected item should appear in the 'Components selection' column.
+
+Do the same for the remaining components. Observe the total price, quantities, etc.. You
+can click on the 'info' icon to get the full details about a selected component. Clicking
+on 'Print Preview' will produce something that a visitor could print (for authorization
+perhaps, or quotation even) before building and buying the product(s). You can also enter
+some stuff in the 'New Product Details' if you wish but so far we have enough to proceed. 
+
+Click on the 'Build Product' button, in a few moments you should either get an error message
+(if something ran out of stock, etc..) or, most likely, a preview of the built product. 
+
+NB: By this stage the product has already been created in the catalog and is ready to be carted!
+
+Click the 'Add to Cart' button, and then view the cart. You should see the newly built
+product in the shopping cart, the components looks exactly like product attributes. If you
+click on the product you will see the same build preview page (as before you clicked add to cart).
+
+If you click the 'What's New' infobox then the newly built product should appear at the top
+of the list. If you don't want built products to appear in the catalog you should enable the
+'Singles Mode: Hide built products' option in the builder options. 
+
+-----------------------
+That concludes the test
+-----------------------
+
+If you don't 'checkout' the cart the build will automatically be deleted after 2 hours,
+see 'After-Build Options' right at the end of the builder options page. If you have enabled the
+'Allow builder to Adjust component stock' option (builder options) the components will be
+returned to stock when the product is deleted. WARNING - deleting builds manually will not
+return components to stock, nor will it remove the attribute defintions (products options values).
+This will change in future as the manual code will be altered to intercept builder products so
+that they can be removed properly. Until then rather let the builder do its own housekeeping (see
+'After-Build Options'). If you regularly delete builds manually your database will accumulate
+rubbish as a result.
+
+NB: The 'After-Build Options' are invoked every time the builder infobox is displayed on your
+site, or basically whenever the builder page isn't open. This instruction is buried in the code
+(see /catalog/includes/boxes/builder.php).
+
+A NOTE ABOUT DEPENDENCY, DEPENDENCE, DEPENDANTS, MASTERS, BIRDS AND BEES:
+-------------------------------------------------------------------------
+One of the key features of this builder is the ability for it to filter the available components
+depending on which components have been selected before it. A perfect example would be an
+online computer shop - you cannot just assume that visitors know what they're talking about
+so you could (for example) force them to choose a CPU first, then the Mainboard and then RAM.
+After choosing a CPU the options available to the visitor for Mainboards could be limited
+to only those that support that particular CPU, and then RAM could be made dependent on the
+type of Mainboard chosen, and so on. 
+
+The builder uses heirarchical dependency to limit component selections, meaning that it is
+a one way, top to bottom relationship. Getting back to the computer shop scenarion, if
+Mainboards are dependent on CPU then it does not mean that CPUs are automatically dependent
+on Mainboards, but you could set it up that way - you will run into a problem though as you
+cannot make Mainboards dependent on CPU and RAM, only one is allowed. This leaves much room
+for improvement later as multi-level full-duplex dependency is introduced - I digress.
+
+To start using dependency you first need to set the category relationship(s). In admin go to
+Custom Products -> Categories. On the far right next to each builder component category you
+will see a 'Dependence category' field (dropdown) and a button just to the right of it. This
+field indicates which builder category the currently selected builder category depends on.
+
+You will see that the default installation already has three builder component categories
+defined; Component 1, 2 and 3. The dependence category fields are set so that Component 1 is
+dependent on nothing which means that when the visitor clicks Component 1 all the products
+(or components) in its 'Products category' (a catalog category) will be listed, Component 2
+is dependent on Component 1 which means that the items listed when the visitor clicks
+Component 2 will be limited by what they chose for Component 1, the same for Component 3 which
+is dependent on Component 2. This would be a typical setup for the 'computer shop' example.
+
+You will remember in the installation that you had to set the 'Products category' field
+before testing the builder. You will now see all these products come together, as defined by
+the 'Dependence category' settings just explained. And before proceeding I would recommend
+that you use Internet Explorer to do this - it's because of the vertical text I used to
+compact the matrix display - you can use another browser but it just doesn't look/work nice.
+I haven't tried very hard but I did hit a wall on this one.
+
+Click on Custom Products -> Dependences. Okay take a moment to absorb what's going on there.
+First things, notice the form controls at the footer; update, print, lines per page, and two
+messages about Zero-Stock and Zero-Status products. The lines per page (default) and Zero-
+Products filters (on/off) can be set in the builder options. Zero-Status means disabled
+products, Zero-Stock needs no explanation.
+
+Near the top of the page, in the green section, the heading reads Parent Products (masters)
+and to the right of that the list of products that fall into this 'masters' section of the
+page, just below the heading is some info and a dropdown box that lets you filter the
+list by Manufacturer. You will see that the Builder Category is 'All categories' - what
+this means is that products from ALL builder categories that have been defined as masters
+are being shown (in the green section!!). Component 1 and Component 2 are both master
+categories (because they both have dependents) so the products from both those builder
+categories (linked to catalog categories) are being displayed.
+
+Below and to the left, in the pink/red section, the heading reads Child Products (dependents).
+Further down (still in the red section) is a list of products that fall into this 'dependents'
+section of the page. Just below the heading you are two dropdown boxes, 'Builder Category'
+which will be showing 'All categories' - this means that the products you see lists down the
+side (the red section) are are ALL from builder categories that have been defined as dependents.
+Component 2 and Component 3 are dependent categories because the both rely on master categories.
+
+The 'Builder Category' drowdown box setting applies to both the green and red sections.
+So if you change this field to lets say Component 2, then you will see that the green section's
+builder category is showing 'Component 1', because Component 2 is dependent on Component 1,
+Component 1 is the master (at the top) and Component 2 is the dependent (down the left side).
+So by changing this field you've filtered the page down to a single builder category and the
+category it depends on.
+
+Moving on, the other dropdown box lets you filter the dependents list by manufacturer. You
+will also see that you can sort the lists of products, the 'sort' is applied to both sections,
+and it is applied to the products within subcategories only, if subcategories are being shown
+you will notice that they never change position, only the products within them do.
+
+Now we get to the most important part of this dependence editor (or matrix editor), the grey
+section of the page with all the checkboxes. Here is where you will define which dependents
+are to be made available when a master product has been chosen by the visitor. By the detailed
+explanation I have given for the rest of the form you should have a pretty firm grasp on the
+concept that the products listed in the red section (on the left) are dependent on the ones
+in the green section (at the top). So, when you 'check' a checkbox you are making the product
+immediately to the left available to the visitor only when the product immediately to the top
+has been chosen by the visitor.
+
+That's basically it, in a very large nutshell. Remember to click the 'update' button to save
+your changes.
+
+You might be wondering what the little blue arrows (to the right of the grey area) are for,
+these are links to the product-edit page for each of the products listed down the left side,
+for whatever purpose, you might find them handy.
+
+In closing, now that you are familiar with the concept and the matrix editor you will need
+to 'Enable Dependency' in the builder options to switch on this feature.
+
+If you get stuck, need more info, want to say something, praise me, flame me, etc... have a
+look at the support forum, I am TENCENTS.
+
+-- END --
