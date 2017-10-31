@@ -431,67 +431,46 @@ require('includes/template_top.php');
 ?>
 
     <?php echo tep_draw_form('mainform', tep_href_link('builder_main.php', tep_get_all_get_params(array('action')) . 'action=add_products'), 'post', 'enctype="multipart/form-data"');?><table border="0" width="100%" cellspacing="0" cellpadding="0">
-      <tr>
-        <td><table border="0" width="100%" cellspacing="0" cellpadding="0">
-          <tr>
-            <td class="pageHeading" align="left"><?php echo $cpb_product_builder_name; ?></td>
-            <td class="pageHeading" align="right"><?php echo tep_image('images/table_background_builder.gif' , $cpb_product_builder_name, HEADING_IMAGE_WIDTH, HEADING_IMAGE_HEIGHT); ?></td>
-          </tr>
-        </table></td>
-      </tr>
-      <tr>
-        <td><?php //echo tep_draw_separator('pixel_trans.gif', '100%', '10'); ?></td>
-      </tr>
+
+<div class="page-header">
+  <h1><?php echo HEADING_TITLE; ?></h1>
+</div>
+
 <?php
 if ($messageStack->size('builder') > 0) {
-?>
-      <tr>
-        <td><?php echo $messageStack->output('builder'); ?></td>
-      </tr>
-      <tr>
-        <td><?php // echo tep_draw_separator('pixel_trans.gif', '100%', '10'); ?></td>
-      </tr>
-<?php
+  echo $messageStack->output('builder'); 
 }
 ?>
-      <tr>
-        <td align="left" class="main"><?php if ($cpb_build_one_product) {echo TEXT_TITLE_SINGLE;} else {echo TEXT_TITLE_MULTIPLE;} ?></td>
-      </tr>
-      <tr>
-        <td align="right" class="main"><?php echo TEXT_TITLE_WARNING; ?></td>
-      </tr>
-      <tr>
-        <td><?php // echo tep_draw_separator('pixel_trans.gif', '100%', '10'); ?></td>
-      </tr>
+      <div class="alert alert-info">
+		<?php 
+			if ($cpb_build_one_product) {
+				echo TEXT_TITLE_SINGLE;
+			} else {
+				echo TEXT_TITLE_MULTIPLE;
+			} 
+		?>
+	  </div>
+      <div class="alert alert-warning"><?php echo TEXT_TITLE_WARNING; ?></div>
+     
 <?php
 // New Product Details - only if in Single Mode
 if (($cpb_build_one_product) && ($cpb_build_product_details_ontop)) {
 ?>
-      <tr>
-        <td><table border="0" width="100%" cellspacing="0" cellpadding="0">
-          <tr height="35">
-            <td class="builder_heading" align="left"><?php echo '&nbsp;&nbsp;' . TEXT_BUILD_DETAILS; ?></td>
-          </tr>
-        </table></td>
-      </tr>
+ 
+	<h4 style="padding:8px;background-color:#eee;"><?php echo '&nbsp;&nbsp;' . TEXT_BUILD_DETAILS; ?></h4>
+
 <?php
   include('includes/modules/builder_singles_header.php');
 }
 // single build mode ends here
 ?>
-      <tr>
-        <td>
+
 <?php
 require('includes/modules/builder_main.php');
 ?>
-
-<div style="OVERFLOW: auto; display: none; position: absolute; border: solid 2; background-color: White; z-index: auto;" id=oFrame></div>
-<div align=center>
+<hr>
+<div style="OVERFLOW: auto; display: none; position: absolute; border: solid 2; background-color: #fff; z-index: auto;" id=oFrame></div>
   <span id=loadstr><br><br><?php echo TEXT_LOADING_PLEASE_WAIT; ?><img src="<?php echo 'images/';?>pbar.gif" width="71" height="11" alt="" border="0"></span>
-
-  <table width="100%">
-    <tr>
-      <td width="100%" class="main" align="center">
 
 <script language="JavaScript">
 var tlines= "<?php echo $total_builder_categories;?>";
@@ -634,21 +613,24 @@ function decimal_substitution(num,direction){
   return num;
 }
 </script>
-          <table border='0' cellspacing='0' cellpadding='0' width='100%' style='border-collapse: collapse' bordercolor='#628AC5'>
-            <tr width="100%" height="35">
-              <td class="builder_heading" align="center" width='23%'><?php echo TEXT_PART_TYPE; ?></td>
-              <td class="builder_heading" align="center" width='54%'><?php echo TEXT_PART_NAME; ?></td>
-              <td class="builder_heading" align="center" width='15%'><?php echo TEXT_PART_PRICE; ?></td>
-              <td class="builder_heading" align="center" width='8%'><?php echo TEXT_PART_QUANTITY; ?></td>
-            </tr>
-          </table>
-          <table id='prod_table' name='prod_table' border='0' cellspacing='0' cellpadding='0' width='100%' bordercolor='#999999'>
-            <tr width="100%" height="0">
-              <td width='23%'></td>
-              <td width='54%'></td>
-              <td width='18%'></td>
-              <td width='5%'></td>
-            </tr>
+
+		　　<table class="table">
+            <thead>
+				<tr>
+				  <th><?php echo TEXT_PART_TYPE; ?></th>
+				  <th><?php echo TEXT_PART_NAME; ?></th>
+				  <th><?php echo TEXT_PART_PRICE; ?></th>
+				  <th class="text-center"><?php echo TEXT_PART_QUANTITY; ?></th>
+				</tr>
+			</thead>
+		   </table>
+			<table id='prod_table' name='prod_table' border='0' cellspacing='0' cellpadding='0' width='100%'>
+				<tr width="100%">
+				  <td class="text-right" width='23%'></td>
+				  <td width='54%'></td>
+				  <td width='18%'></td>
+				  <td width='5%'></td>
+				</tr>
 
 <script language="JavaScript">
 var text_please_wait="<?php echo TEXT_LOADING_PLEASE_WAIT; ?>";
@@ -678,10 +660,9 @@ if ($cpb_system_assembly != "0") {
 }
 ?>
 </script>
-            </td>
-          </tr>
-        </table>
-        <table height="35" width="100%" id='prod_table' name='prod_table' border='0' callpadding='0' cellspacing='0' style='border-collapse: collapse' bordercolor='#628AC5'>
+         
+       </table>
+        <table class="table" height="35" width="100%" id='prod_table' name='prod_table' border='0' callpadding='0' cellspacing='0' style='border-collapse: collapse' bordercolor='#628AC5'>
           <input type="hidden" name="select1" onchange="calc_subtotal(mainform);calc_total(mainform);" size="4" multiple style="width=330">
           <tr onClick="oFrame.style.display='none'">
             <td width="50%" class="builder_heading" align="left"><?php if (($cpb_build_one_product) && (!$cpb_build_product_details_ontop)) {echo '&nbsp;&nbsp;' . TEXT_BUILD_DETAILS;} ?></td>
@@ -689,41 +670,31 @@ if ($cpb_system_assembly != "0") {
             <td width='20%' class='builder_footing' align='left'><input type=text size=13 name="totsum" readonly style="font: bold 10pt;"><?php echo "&nbsp;" . $currency_symb['symbol_right']; ?></td>
           </tr>
         </table>
-      </td>
+    
 <?php
 // New Product Details - if in Single Mode
 if (($cpb_build_one_product) && (!$cpb_build_product_details_ontop)) {
   include('includes/modules/builder_singles_header.php');
 }
 ?>
-      <tr>
-        <td><?php // echo tep_draw_separator('pixel_trans.gif', '100%', '10'); ?></td>
-      </tr>
-      <tr>
-        <td><table border="0" width="100%" cellspacing="1" cellpadding="2" class="infoBox">
+    
+		<table border="0" width="100%" cellspacing="1" cellpadding="2" class="table infoBox">
           <tr class="infoBoxContents">
             <td><table border="0" width="100%" cellspacing="0" cellpadding="3">
               <td width="10"><?php // echo tep_draw_separator('pixel_trans.gif', '10', '1'); ?></td>
                 <tr>
                   <td width="10"><?php // echo tep_draw_separator('pixel_trans.gif', '10', '1'); ?></td>
-                  <td align="left"><input type="button" value="<?php echo TEXT_FORM_RESET; ?>" onClick="mainform_onsubmit(mainform,3,<?php echo $c_java;?>);" class="button">
-                  <td align="center"><input type="button" value="<?php echo TEXT_PRINT_PREVIEW; ?>" onClick="mainform_onsubmit(mainform,1,<?php echo $c_java;?>);" class="button">
-                  <td align="right"><input type="button" value="<?php if (($cpb_build_one_product) && ($cpb_build_preview_single)) { echo TEXT_BUILD_ORDER; } else { echo TEXT_MAKE_ORDER; }?>" onClick="mainform_onsubmit(mainform,2,<?php echo $c_java;?>);" class="button">
+                  <td align="left"><input type="button" value="<?php echo TEXT_FORM_RESET; ?>" onClick="mainform_onsubmit(mainform,3,<?php echo $c_java;?>);" class="button"></td>
+                  <td align="center"><input type="button" value="<?php echo TEXT_PRINT_PREVIEW; ?>" onClick="mainform_onsubmit(mainform,1,<?php echo $c_java;?>);" class="button"></td>
+                  <td align="right"><input type="button" value="<?php if (($cpb_build_one_product) && ($cpb_build_preview_single)) { echo TEXT_BUILD_ORDER; } else { echo TEXT_MAKE_ORDER; }?>" onClick="mainform_onsubmit(mainform,2,<?php echo $c_java;?>);" class="button"></td>
                   <td width="10"><?php // echo tep_draw_separator('pixel_trans.gif', '10', '1'); ?></td>
                 </tr>
-              <td width="10"><?php // echo tep_draw_separator('pixel_trans.gif', '10', '1'); ?></td>
             </table></td>
           </tr>
-        </table></td>
-      </tr>
-      <tr>
-        <td><?php // echo tep_draw_separator('pixel_trans.gif', '100%', '10'); ?></td>
-      </tr>
-      <tr>
-        <td><?php // echo tep_draw_separator('pixel_trans.gif', '100%', '10'); ?></td>
-      </tr>
-      </tr>
-    </table>
+        </table>
+      
+
+
     <input type=hidden name="sum">
     <input type=hidden name="totprint">
     <input type=hidden name="price">
@@ -733,9 +704,7 @@ if (($cpb_build_one_product) && (!$cpb_build_product_details_ontop)) {
     <input type=hidden name="p_id">
     <input type=hidden name="p_qty">
     </form>
-</div>
-</tr></tr></tr>
-    </table>
+
 <?php
 // RELOAD FORM DATA (component selections) IF REQUIRED - USUALLY AFTER AN ERROR OR FOR FUTURE RELOADS
 if ($reload_form) {
@@ -769,6 +738,7 @@ if ($reload_form) {
 }
 // END OF RELOAD FORM (component selections)
 ?>
+
 <?php
   require('includes/template_bottom.php');
   require('includes/application_bottom.php');

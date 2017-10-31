@@ -26,7 +26,7 @@ var ammount = new Array();
 var categ = new Array();
 var prods_counter=0;
 // IF AN OPTION IS NOT SET YET THEN THE MESSAGE IS HELD IN VARIABLE default_line (BELOW)
-var default_line = '<?php echo "&nbsp;&nbsp;" . tep_image('images/' . "no_select.gif", '', 17, 17, 'align=absmiddle') . "&nbsp;&nbsp;" . TEXT_COMPONENT_NOT_SELECTED;?>';
+var default_line = '<?php echo tep_image('images/' . "no_select.gif", '', 17, 17, '') . TEXT_COMPONENT_NOT_SELECTED;?>';
 var fmTimer;
 var faded=true;
 var fadeObj;
@@ -50,7 +50,7 @@ function print_field(category,indx,row,picname,assemb_id){
   if (showcatimage>0){
     document.write ("<th onClick='show_products(event,this,"+indx+","+row+","+assemb_id+")' valign=center width=<?php echo $cpb_build_category_image_width;?> align=left style='cursor:pointer;cursor:hand;' >");
 //    document.write ("<th onClick=\"oFrame.style.display='none'\" valign=center width=<?php echo $cpb_build_category_image_width;?> align=left>");
-    document.write ('<?php echo tep_image('images/' . $cpb_category_images_folder . "'+picname+'", "'+category+'", $cpb_build_category_image_width, $cpb_build_category_image_height, "align=absmiddle");?>');
+    document.write ('<?php echo tep_image('images/' . $cpb_category_images_folder . "'+picname+'", "'+category+'", $cpb_build_category_image_width, $cpb_build_category_image_height, "align=left");?>');
   } else {
 
     document.write ("<th onClick='show_products(event,this,"+indx+","+row+","+assemb_id+")' valign=center align=left style='cursor:pointer;cursor:hand;' >");
@@ -61,7 +61,7 @@ function print_field(category,indx,row,picname,assemb_id){
   +"<th>"
         +"<table style='border-collapse: collapse' bordercolor='#dddddd' border=0>"
           +"<tr>"
-                +"<th align='left' onclick='show_products(event,this,"+indx+","+row+","+assemb_id+")' style='cursor:pointer;cursor:hand;' width=100%>"+default_line+"</th>"
+                +"<th onclick='show_products(event,this,"+indx+","+row+","+assemb_id+")' style='cursor:pointer;cursor:hand;' width=100%>"+default_line+"</th>"
                 +"<th onClick='show_products(event,this,"+indx+","+row+","+assemb_id+")' style='cursor:pointer;cursor:hand;' >");
 document.write ('<?php echo tep_image('images/' . "scroll.gif", '', 20, 18, 'align=absmiddle');?>');
 document.write ("</th>");
