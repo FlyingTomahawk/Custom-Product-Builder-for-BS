@@ -1,0 +1,6 @@
+Custom Products Builder BS BUGLIST
+**********************************
+
+Bug 1. 
+
+When in non-single mode, products with attributes don't get added to the cart.
