@@ -15,20 +15,20 @@
   Released under the GNU General Public License
 */
 
-			    if (isset($HTTP_GET_VARS['manufacturers_id'])) { 
-                $products_ids = tep_db_query("select p.products_id from " . TABLE_PRODUCTS . " p where p.products_status = '1'  and p.manufacturers_id = '" . (int)$HTTP_GET_VARS['manufacturers_id'] . "'");
-				$category_name_query = tep_db_query("select manufacturers_name from " . TABLE_MANUFACTURERS . " where manufacturers_id = '" . (int)$HTTP_GET_VARS['manufacturers_id'] . "'");
+			    if (isset($_GET['manufacturers_id'])) { 
+                $products_ids = tep_db_query("select p.products_id from products p where p.products_status = '1'  and p.manufacturers_id = '" . (int)$_GET['manufacturers_id'] . "'");
+				$category_name_query = tep_db_query("select manufacturers_name from manufacturers where manufacturers_id = '" . (int)$_GET['manufacturers_id'] . "'");
 				$category_name_row = tep_db_fetch_array($category_name_query);
 				$prev_next_in = PREV_NEXT_MB . '&nbsp;' . ($category_name_row['manufacturers_name']);
-				$fPath = 'manufacturers_id=' . (int)$HTTP_GET_VARS['manufacturers_id'];
+				$fPath = 'manufacturers_id=' . (int)$_GET['manufacturers_id'];
                 } else {
 				if (!$current_category_id) {
-					$cPath_query = tep_db_query ("SELECT categories_id FROM " . TABLE_PRODUCTS_TO_CATEGORIES . " WHERE products_id ='" .  (int)$HTTP_GET_VARS['products_id'] . "'");
+					$cPath_query = tep_db_query ("SELECT categories_id FROM products_to_categories WHERE products_id ='" .  (int)$_GET['products_id'] . "'");
 					$cPath_row = tep_db_fetch_array($cPath_query);
 					$current_category_id = $cPath_row['categories_id'];
 				}
-				$products_ids = tep_db_query("select p.products_id from " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_TO_CATEGORIES . " ptc where p.products_status = '1'  and p.products_id = ptc.products_id and ptc.categories_id = $current_category_id");
-				$category_name_query = tep_db_query("select categories_name from " . TABLE_CATEGORIES_DESCRIPTION . " where categories_id = $current_category_id AND language_id = $languages_id");
+				$products_ids = tep_db_query("select p.products_id from products p, products_to_categories ptc where p.products_status = '1'  and p.products_id = ptc.products_id and ptc.categories_id = $current_category_id");
+				$category_name_query = tep_db_query("select categories_name from categories_description where categories_id = $current_category_id AND language_id = $languages_id");
 				$category_name_row = tep_db_fetch_array($category_name_query);
 				$prev_next_in = PREV_NEXT_CAT . '&nbsp;' . ($category_name_row['categories_name']);
 				$fPath = 'cPath=' . $cPath;
@@ -40,7 +40,7 @@
          		reset ($id_array);
 				$counter = 0;
 				while (list($key, $value) = each ($id_array)) {
-					if ($value == (int)$HTTP_GET_VARS['products_id']) {
+					if ($value == (int)$_GET['products_id']) {
 						$position = $counter;
 						if ($key == 0)
 							$previous = -1; // it was the first to be found

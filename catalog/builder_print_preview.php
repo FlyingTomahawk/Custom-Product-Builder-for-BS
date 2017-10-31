@@ -13,7 +13,7 @@ require('includes/application_top.php');
 require('includes/languages' . '/' . $language . '/' . 'builder_print_preview.php');
 
 // get builder options
-  $cbcomp_query = tep_db_query("select cpb_system_assembly, cpb_product_builder_name, cpb_build_name, cpb_use_software from " . TABLE_BUILDER_OPTIONS);
+  $cbcomp_query = tep_db_query("select cpb_system_assembly, cpb_product_builder_name, cpb_build_name, cpb_use_software from builder_options");
   while ($cbcomp = tep_db_fetch_array($cbcomp_query)){
     $cpb_system_assembly = $cbcomp['cpb_system_assembly'];
     $cpb_use_software = $cbcomp['cpb_use_software'];
@@ -74,7 +74,7 @@ require('includes/languages' . '/' . $language . '/' . 'builder_print_preview.ph
 	 $InsertPrices=explode("::",$InsertPrices);
      $InsertQTY=explode("::",$InsertQTY);
      $pcount=0;
-     $bcomp_query = tep_db_query("select cpb_category_name from " . TABLE_BUILDER_CATEGORIES . " ORDER BY cpb_category_id");
+     $bcomp_query = tep_db_query("select cpb_category_name from builder_categories ORDER BY cpb_category_id");
       while ($bcomp = tep_db_fetch_array($bcomp_query)){
 		$pccat[$pcount]= $bcomp['cpb_category_name'];
 ?>

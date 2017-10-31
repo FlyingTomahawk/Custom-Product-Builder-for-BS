@@ -15,9 +15,9 @@
   require('includes/languages' . '/' . $language . '/' . 'builder_product_info.php');
 
 // check if tables exist
-if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . "'"))==1) {
+if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_options'"))==1) {
 // get builder options
-  $cbcomp_query = tep_db_query("select cpb_build_product_status_default, cpb_build_disable_after_carted, cpb_build_preview_single, cpb_use_software, cpb_build_unsort_components from " . TABLE_BUILDER_OPTIONS);
+  $cbcomp_query = tep_db_query("select cpb_build_product_status_default, cpb_build_disable_after_carted, cpb_build_preview_single, cpb_use_software, cpb_build_unsort_components from builder_options");
   while ($cbcomp = tep_db_fetch_array($cbcomp_query)){
     $cpb_use_software = $cbcomp['cpb_use_software'];
     $cpb_build_unsort_components= $cbcomp['cpb_build_unsort_components'];
@@ -31,7 +31,7 @@ if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . 
 }
 
 // if non-builder product then redirect to osC-product_info
-  $product_check_query = tep_db_query("select p.builder_product_flag, count(*) as total from " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION . " pd where p.products_id = '" . (int)$HTTP_GET_VARS['products_id'] . "' and pd.products_id = p.products_id and pd.language_id = '" . (int)$languages_id . "' group by p.products_id");
+  $product_check_query = tep_db_query("select p.builder_product_flag, count(*) as total from products p, products_description pd where p.products_id = '" . (int)$_GET['products_id'] . "' and pd.products_id = p.products_id and pd.language_id = '" . (int)$languages_id . "' group by p.products_id");
   $product_check = tep_db_fetch_array($product_check_query);
   if ($product_check['builder_product_flag'] == '0') {
     tep_redirect(tep_href_link('product_info.php?products_id=' . $_GET['products_id']));
@@ -73,10 +73,10 @@ function popupWindow(url) {
       </tr>
 <?php
   } else {
-    $product_info_query = tep_db_query("select p.products_id, pd.products_name, pd.products_description, p.products_model, p.products_quantity, p.products_image, pd.products_url, p.products_price, p.products_tax_class_id, p.products_date_added, p.products_date_available, p.manufacturers_id from " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION . " pd where p.products_id = '" . (int)$HTTP_GET_VARS['products_id'] . "' and pd.products_id = p.products_id and pd.language_id = '" . (int)$languages_id . "'");
+    $product_info_query = tep_db_query("select p.products_id, pd.products_name, pd.products_description, p.products_model, p.products_quantity, p.products_image, pd.products_url, p.products_price, p.products_tax_class_id, p.products_date_added, p.products_date_available, p.manufacturers_id from products p, products_description pd where p.products_id = '" . (int)$_GET['products_id'] . "' and pd.products_id = p.products_id and pd.language_id = '" . (int)$languages_id . "'");
     $product_info = tep_db_fetch_array($product_info_query);
 
-    tep_db_query("update " . TABLE_PRODUCTS_DESCRIPTION . " set products_viewed = products_viewed+1 where products_id = '" . (int)$HTTP_GET_VARS['products_id'] . "' and language_id = '" . (int)$languages_id . "'");
+    tep_db_query("update products_description set products_viewed = products_viewed+1 where products_id = '" . (int)$_GET['products_id'] . "' and language_id = '" . (int)$languages_id . "'");
 
     if ($new_price = tep_get_products_special_price($product_info['products_id'])) {
       $products_price = '<s>' . $currencies->display_price($product_info['products_price'], tep_get_tax_rate($product_info['products_tax_class_id'])) . '</s> <span class="productSpecialPrice">' . $currencies->display_price($new_price, tep_get_tax_rate($product_info['products_tax_class_id'])) . '</span>';
@@ -99,7 +99,7 @@ function popupWindow(url) {
 if ((int)$product_info['products_price'] > 0) {
         echo $products_price;
 } else {
-        $products_options_name_query = tep_db_query("select distinct sum(options_values_price) from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . (int)$HTTP_GET_VARS['products_id'] . "' group by products_id");
+        $products_options_name_query = tep_db_query("select distinct sum(options_values_price) from products_attributes where products_id='" . (int)$_GET['products_id'] . "' group by products_id");
         $products_options_name = tep_db_fetch_array($products_options_name_query);
         echo $currencies->display_price($products_options_name['sum(options_values_price)'],  tep_get_tax_rate($product_info['products_tax_class_id']));
 }
@@ -133,7 +133,7 @@ document.write('<?php echo '<a href="javascript:popupWindow(\\\'' . tep_href_lin
 ?>
           <p><?php echo stripslashes($product_info['products_description']); ?></p>
 <?php
-    $products_attributes_query = tep_db_query("select count(*) as total from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id='" . (int)$HTTP_GET_VARS['products_id'] . "' and patrib.options_id = popt.products_options_id and popt.language_id = '" . (int)$languages_id . "'");
+    $products_attributes_query = tep_db_query("select count(*) as total from products_options popt, products_attributes patrib where patrib.products_id='" . (int)$_GET['products_id'] . "' and patrib.options_id = popt.products_options_id and popt.language_id = '" . (int)$languages_id . "'");
     $products_attributes = tep_db_fetch_array($products_attributes_query);
     if ($products_attributes['total'] > 0) {
 ?>
@@ -143,13 +143,13 @@ document.write('<?php echo '<a href="javascript:popupWindow(\\\'' . tep_href_lin
             </tr>
 <?php
       if ($cpb_build_unsort_components) {
-        $products_options_name_query = tep_db_query("select distinct patrib.options_values_price, popt.products_options_id, popt.products_options_name from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id='" . (int)$HTTP_GET_VARS['products_id'] . "' and patrib.options_id = popt.products_options_id and popt.language_id = '" . (int)$languages_id . "' group by popt.products_options_id");
+        $products_options_name_query = tep_db_query("select distinct patrib.options_values_price, popt.products_options_id, popt.products_options_name from products_options popt, products_attributes patrib where patrib.products_id='" . (int)$_GET['products_id'] . "' and patrib.options_id = popt.products_options_id and popt.language_id = '" . (int)$languages_id . "' group by popt.products_options_id");
       } else {
-        $products_options_name_query = tep_db_query("select distinct sum(patrib.options_values_price), popt.products_options_id, popt.products_options_name from " . TABLE_PRODUCTS_OPTIONS . " popt, " . TABLE_PRODUCTS_ATTRIBUTES . " patrib where patrib.products_id='" . (int)$HTTP_GET_VARS['products_id'] . "' and patrib.options_id = popt.products_options_id and popt.language_id = '" . (int)$languages_id . "' group by popt.products_options_name");
+        $products_options_name_query = tep_db_query("select distinct sum(patrib.options_values_price), popt.products_options_id, popt.products_options_name from products_options popt, products_attributes patrib where patrib.products_id='" . (int)$_GET['products_id'] . "' and patrib.options_id = popt.products_options_id and popt.language_id = '" . (int)$languages_id . "' group by popt.products_options_name");
       }
       while ($products_options_name = tep_db_fetch_array($products_options_name_query)) {
         $products_options_array = array();
-          $products_options_query = tep_db_query("select pov.products_options_values_id, pov.products_options_values_name, pov.catalog_products_id from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov where pa.products_id = '" . (int)$HTTP_GET_VARS['products_id'] . "' and pa.options_id = '" . (int)$products_options_name['products_options_id'] . "' and pa.options_values_id = pov.products_options_values_id and pov.language_id = '" . (int)$languages_id . "'");
+          $products_options_query = tep_db_query("select pov.products_options_values_id, pov.products_options_values_name, pov.catalog_products_id from products_attributes pa, products_options_values pov where pa.products_id = '" . (int)$_GET['products_id'] . "' and pa.options_id = '" . (int)$products_options_name['products_options_id'] . "' and pa.options_values_id = pov.products_options_values_id and pov.language_id = '" . (int)$languages_id . "'");
 
         while ($products_options = tep_db_fetch_array($products_options_query)) {
           $component_name = $products_options['products_options_values_name'];

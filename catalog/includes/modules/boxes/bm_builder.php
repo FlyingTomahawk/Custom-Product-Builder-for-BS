@@ -35,8 +35,8 @@
 
         if (substr(basename($PHP_SELF), 0, 12) != 'builder_main') {
             
-            if(tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . "'"))==1) {
-                $builder_query_raw="select cpb_auto_disable_time, cpb_auto_delete_time, cpb_reduce_stock, cpb_build_allow_disable_product, cpb_use_software, cpb_build_name, cpb_product_builder_name, cpb_product_builder_image FROM " . TABLE_BUILDER_OPTIONS;
+            if(tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_options'"))==1) {
+                $builder_query_raw="select cpb_auto_disable_time, cpb_auto_delete_time, cpb_reduce_stock, cpb_build_allow_disable_product, cpb_use_software, cpb_build_name, cpb_product_builder_name, cpb_product_builder_image FROM builder_options";
                 $builder_query = tep_db_query($builder_query_raw);
                 $builder = tep_db_fetch_array($builder_query);
 
@@ -81,13 +81,13 @@
     }
 
     function install() {
-      tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added) values ('Enable Information Module', 'MODULE_BOXES_BUILDER_STATUS', 'True', 'Do you want to add the module to your shop?', '6', '1', 'tep_cfg_select_option(array(\'True\', \'False\'), ', now())");
-      tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added) values ('Content Placement', 'MODULE_BOXES_BUILDER_CONTENT_PLACEMENT', 'Left Column', 'Should the module be loaded in the left or right column?', '6', '1', 'tep_cfg_select_option(array(\'Left Column\', \'Right Column\'), ', now())");
-      tep_db_query("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Sort Order', 'MODULE_BOXES_BUILDER_SORT_ORDER', '0', 'Sort order of display. Lowest is displayed first.', '6', '0', now())");
+      tep_db_query("insert into configuration (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added) values ('Enable Information Module', 'MODULE_BOXES_BUILDER_STATUS', 'True', 'Do you want to add the module to your shop?', '6', '1', 'tep_cfg_select_option(array(\'True\', \'False\'), ', now())");
+      tep_db_query("insert into configuration (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added) values ('Content Placement', 'MODULE_BOXES_BUILDER_CONTENT_PLACEMENT', 'Left Column', 'Should the module be loaded in the left or right column?', '6', '1', 'tep_cfg_select_option(array(\'Left Column\', \'Right Column\'), ', now())");
+      tep_db_query("insert into configuration (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Sort Order', 'MODULE_BOXES_BUILDER_SORT_ORDER', '0', 'Sort order of display. Lowest is displayed first.', '6', '0', now())");
     }
 
     function remove() {
-      tep_db_query("delete from " . TABLE_CONFIGURATION . " where configuration_key in ('" . implode("', '", $this->keys()) . "')");
+      tep_db_query("delete from configuration where configuration_key in ('" . implode("', '", $this->keys()) . "')");
     }
 
     function keys() {

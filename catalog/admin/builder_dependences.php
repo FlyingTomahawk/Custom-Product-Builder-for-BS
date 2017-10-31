@@ -13,7 +13,7 @@
   require('includes/application_top.php');
 
 // check if builder tables exist ---------------------------
-if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . "'"))!=1) {
+if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_options'"))!=1) {
   tep_redirect(tep_href_link('builder_options.php'));
 }
 
@@ -31,10 +31,10 @@ switch ($_GET['action']) {
         foreach ($prod2 as $product_2) {
           if ($product_1 <> $previous_product) {
             $previous_product = $product_1;
-            tep_db_query("DELETE FROM " . TABLE_BUILDER_DEPENDENCES . " WHERE product1_id='" . (int)$product_1 . "'");
+            tep_db_query("DELETE FROM builder_dependences WHERE product1_id='" . (int)$product_1 . "'");
           }
           if (($d_max[$product_1][$product_2] == 1) OR ($d_max[$product_1][$product_2] == 'on')) {
-            tep_db_query("INSERT INTO " . TABLE_BUILDER_DEPENDENCES . " SET product1_id='" . (int)$product_1 . "', product2_id='" . (int)$product_2 . "'");
+            tep_db_query("INSERT INTO builder_dependences SET product1_id='" . (int)$product_1 . "', product2_id='" . (int)$product_2 . "'");
             $depend_count++;
           }
         }
@@ -51,7 +51,7 @@ switch ($_GET['action']) {
 }
 
 // GET BUILDER OPTIONS -------------------------------------
-  $cbcomp_query = tep_db_query("select * from " . TABLE_BUILDER_OPTIONS);
+  $cbcomp_query = tep_db_query("select * from builder_options");
   while ($cbcomp = tep_db_fetch_array($cbcomp_query)){
     $cpb_product_builder_name= $cbcomp['cpb_product_builder_name'];
     $cpb_matrix_edit_default_lines_per_page= $cbcomp['cpb_matrix_edit_default_lines_per_page'];
@@ -68,7 +68,7 @@ switch ($_GET['action']) {
   }
 
 // LOAD BUILDER CATEGORIES INTO ARRAY
-$bcomp_query = tep_db_query("select * from " . TABLE_BUILDER_CATEGORIES . " ORDER BY cpb_category_id");
+$bcomp_query = tep_db_query("select * from builder_categories ORDER BY cpb_category_id");
 while ($bcomp = tep_db_fetch_array($bcomp_query)){
   $pcid[$bcomp['cpb_category_id']]= $bcomp['cpb_category_id'];
   $pccat[$bcomp['cpb_category_id']]= $bcomp['cpb_category_name'];
@@ -108,7 +108,7 @@ $manufacturer = $_GET['manufacturer'];
 $d_manufacturer = $_GET['d_manufacturer'];
 
 // GET CURRENT DEPENDENCY DEFINITIONS (nb: product 1 = dependant, product 2 = master)
-$bdep_query = tep_db_query("select * from " . TABLE_BUILDER_DEPENDENCES . " ORDER BY product1_id");
+$bdep_query = tep_db_query("select * from builder_dependences ORDER BY product1_id");
 while ($bdep = tep_db_fetch_array($bdep_query)){
   $product_1 = $bdep['product1_id'];
   $product_2 = $bdep['product2_id'];
@@ -120,7 +120,7 @@ while ($bdep = tep_db_fetch_array($bdep_query)){
 
 // GET MANUFACTURER INFO
 $manufacturers_array = array(array('id' => '0', 'text' => NO_MANUFACTURER));
-$manufacturers_query = tep_db_query("select manufacturers_id, manufacturers_name from " . TABLE_MANUFACTURERS . " order by manufacturers_name");
+$manufacturers_query = tep_db_query("select manufacturers_id, manufacturers_name from manufacturers order by manufacturers_name");
 while ($manufacturers = tep_db_fetch_array($manufacturers_query)) {
   $manufacturers_array[] = array('id' => $manufacturers['manufacturers_id'],'text' => $manufacturers['manufacturers_name']);
 }
@@ -128,7 +128,7 @@ while ($manufacturers = tep_db_fetch_array($manufacturers_query)) {
 // FUNCTION : GET MANUFACTURER LIST
 function manufacturers_list(){
   global $manufacturer;
-  $manufacturers_query = tep_db_query("select m.manufacturers_id, m.manufacturers_name from " . TABLE_MANUFACTURERS . " m order by m.manufacturers_name ASC");
+  $manufacturers_query = tep_db_query("select m.manufacturers_id, m.manufacturers_name from manufacturers m order by m.manufacturers_name ASC");
   $return_string = '<select name="manufacturer" onChange="this.form.submit();">';
   $return_string .= '<option value="' . 0 . '">' . TEXT_ALL_MANUFACTURERS . '</option>';
   while($manufacturers = tep_db_fetch_array($manufacturers_query)){
@@ -143,7 +143,7 @@ function manufacturers_list(){
 // FUNCTION : GET DEPENDENCE MANUFACTURER LIST
 function d_manufacturers_list(){
   global $d_manufacturer;
-  $d_manufacturers_query = tep_db_query("select m.manufacturers_id, m.manufacturers_name from " . TABLE_MANUFACTURERS . " m order by m.manufacturers_name ASC");
+  $d_manufacturers_query = tep_db_query("select m.manufacturers_id, m.manufacturers_name from manufacturers m order by m.manufacturers_name ASC");
   $return_string = '<select name="d_manufacturer" onChange="this.form.submit();">';
   $return_string .= '<option value="' . 0 . '">' . TEXT_ALL_MANUFACTURERS . '</option>';
   while($d_manufacturers = tep_db_fetch_array($d_manufacturers_query)){
@@ -328,9 +328,9 @@ if (strstr($where_str,"()")) {
   $where_str = substr($where_str,0,strlen($where_str)-7);
 }
 if ($d_manufacturer) {
-  $d_products_query_raw = "select p.products_id, p.products_status, p.products_model, pd.products_name, pc.categories_id, c.parent_id from  " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION .  " pd, " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_CATEGORIES . " c where " . $where_str . " and p.manufacturers_id = " . $d_manufacturer . " $sort_by ";
+  $d_products_query_raw = "select p.products_id, p.products_status, p.products_model, pd.products_name, pc.categories_id, c.parent_id from products p, products_description pd, products_to_categories pc, categories c where " . $where_str . " and p.manufacturers_id = " . $d_manufacturer . " $sort_by ";
 } else {
-  $d_products_query_raw = "select p.products_id, p.products_status, p.products_model, pd.products_name, pc.categories_id, c.parent_id from  " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION .  " pd, " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_CATEGORIES . " c where " . $where_str . $sort_by ;
+  $d_products_query_raw = "select p.products_id, p.products_status, p.products_model, pd.products_name, pc.categories_id, c.parent_id from products p, products_description pd, products_to_categories pc, categories c where " . $where_str . $sort_by ;
 }
 $d_products_query = tep_db_query($d_products_query_raw);
 
@@ -406,9 +406,9 @@ if (strstr($where_str,"()")) {
   $where_str = substr($where_str,0,strlen($where_str)-7);
 }
 if ($manufacturer) {
-  $products_query_raw = "select p.products_id, p.products_status, p.products_model, pd.products_name, pc.categories_id, c.parent_id from  " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION .  " pd, " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_CATEGORIES . " c where " . $where_str . " and p.manufacturers_id = " . $manufacturer . " $sort_by ";
+  $products_query_raw = "select p.products_id, p.products_status, p.products_model, pd.products_name, pc.categories_id, c.parent_id from products p, products_description pd, products_to_categories pc, categories c where " . $where_str . " and p.manufacturers_id = " . $manufacturer . " $sort_by ";
 } else {
-  $products_query_raw = "select p.products_id, p.products_status, p.products_model, pd.products_name, pc.categories_id, c.parent_id from  " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION .  " pd, " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_CATEGORIES . " c where " . $where_str . $sort_by ;
+  $products_query_raw = "select p.products_id, p.products_status, p.products_model, pd.products_name, pc.categories_id, c.parent_id from products p, products_description pd, products_to_categories pc, categories c where " . $where_str . $sort_by ;
 }
 
 // THIS LITTLE ROUTINE SPLITS THE PAGES UP ACCORDING TO THE lines per page SETTING

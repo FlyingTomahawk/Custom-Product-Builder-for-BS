@@ -15,14 +15,14 @@ require('includes/application_top.php');
 require('includes/languages' . '/' . $language . '/' . 'builder_product_list.php');
 
 // GET CURRENCY STUFF
-$currency_symb_query = tep_db_query("select symbol_left, symbol_right, decimal_point, thousands_point, decimal_places from " . TABLE_CURRENCIES . " where code='".$currency."'");
+$currency_symb_query = tep_db_query("select symbol_left, symbol_right, decimal_point, thousands_point, decimal_places from currencies where code='".$currency."'");
 $currency_symb = tep_db_fetch_array($currency_symb_query);
 
 // GET BUILDER OPTIONS AND CATEGORIES ------------------------------------------
-if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . "'"))==1) {
+if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_options'"))==1) {
 
 // get builder options
-  $cbcomp_query = tep_db_query("select * from " . TABLE_BUILDER_OPTIONS);
+  $cbcomp_query = tep_db_query("select * from builder_options");
   while ($cbcomp = tep_db_fetch_array($cbcomp_query)){
     $cpb_system_assembly= $cbcomp['cpb_system_assembly'];
     $cpb_assembly_osccat= $cbcomp['cpb_assembly_osccat'];
@@ -71,7 +71,7 @@ if ($cpb_popup_sort_by_price) {
 
 // get builder categories - insert them into a perfect sequential array (i.e. 1,2,3,4,etc..)
   $pcount=0;
-  $bcomp_query = tep_db_query("select * from " . TABLE_BUILDER_CATEGORIES . " ORDER BY cpb_category_id");
+  $bcomp_query = tep_db_query("select * from builder_categories ORDER BY cpb_category_id");
   while ($bcomp = tep_db_fetch_array($bcomp_query)){
     $pcshadowid[$pcount] = $bcomp['cpb_category_id'];
     $pcid[$pcount]= $pcount+1;
@@ -103,7 +103,7 @@ if ($cpb_popup_sort_by_price) {
 }
 
 // GET CATEGORY DESCRIPTIONS ----------------------------------
-$category_query = tep_db_query("select categories_id, categories_name from " . TABLE_CATEGORIES_DESCRIPTION . " where language_id='".$languages_id."'");
+$category_query = tep_db_query("select categories_id, categories_name from categories_description where language_id='".$languages_id."'");
 while ($categories=tep_db_fetch_array($category_query)){
   $category_names[$categories['categories_id']]=$categories['categories_name'];
 }
@@ -119,28 +119,28 @@ if ($cpb_use_dependence==1){
 // the very next two sql's address the same database - can these not be done in one sweep
   if ($pcid[$_GET['row']] != $pcdcat[$_GET['row']] && $pcdcat[$_GET['row']] != 0) {
     $strDependences ="(";
-    $d_query = tep_db_query("select product2_id from " . TABLE_BUILDER_DEPENDENCES . " where product1_id='".$_GET['idp'.$pcdcat[$_GET['row']]]."'");
+    $d_query = tep_db_query("select product2_id from builder_dependences where product1_id='".$_GET['idp'.$pcdcat[$_GET['row']]]."'");
     while ($depends=tep_db_fetch_array($d_query)) {
       $strDependences .=", ".$depends['product2_id'];
     }
-    $d_query = tep_db_query("select product1_id from " . TABLE_BUILDER_DEPENDENCES . " where product2_id='".$_GET['idp'.$pcdcat[$_GET['row']]]."'");
+    $d_query = tep_db_query("select product1_id from builder_dependences where product2_id='".$_GET['idp'.$pcdcat[$_GET['row']]]."'");
     while ($depends=tep_db_fetch_array($d_query)) {
       $strDependences .=", ".$depends['product1_id'];
     }
     $strDependences .= ")";
     $strDependences = substr_replace($strDependences,'',1,1);
     if ($strDependences != "(") {
-      $strQueryProducts= "select pc.products_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$temp."' and pc.products_id in ". $strDependences . $sort_product;
+      $strQueryProducts= "select pc.products_id from products_to_categories pc, products p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$temp."' and pc.products_id in ". $strDependences . $sort_product;
     } else {
-      $strQueryProducts= "select pc.products_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$temp."' " . $sort_product;
+      $strQueryProducts= "select pc.products_id from products_to_categories pc, products p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$temp."' " . $sort_product;
     }
   } else {
-    $strQueryProducts= "select pc.products_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$temp."' " . $sort_product;
+    $strQueryProducts= "select pc.products_id from products_to_categories pc, products p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$temp."' " . $sort_product;
   }
 } else {
-  $strQueryProducts= "select pc.products_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$temp."' " . $sort_product;
+  $strQueryProducts= "select pc.products_id from products_to_categories pc, products p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$temp."' " . $sort_product;
 }
-$a_query = tep_db_query("select categories_id from " . TABLE_CATEGORIES . " where parent_id='".$temp."'");
+$a_query = tep_db_query("select categories_id from categories where parent_id='".$temp."'");
 while ($acat=tep_db_fetch_array($a_query)){
   $acategory[$temp][$acount]=$acat['categories_id'];
   $acount++;
@@ -156,7 +156,7 @@ $textshow[$temp].="print_title('".$category_names[$temp] . TEXT_SELECT_ITEM ."')
 // PRODUCTS WITHOUT SUB CATEGORIES -----------------------------------------------------------
 $c_query = tep_db_query($strQueryProducts);
 while ($count = tep_db_fetch_array($c_query)) {
-  $a_query = tep_db_query("select pd.products_name, pd.products_description from " . TABLE_PRODUCTS_DESCRIPTION . " pd, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pd.products_id and (pd.products_id='".$count['products_id']."' AND pd.language_id='".$languages_id."')");
+  $a_query = tep_db_query("select pd.products_name, pd.products_description from products_description pd, products p where " . $filter_product . " p.products_id = pd.products_id and (pd.products_id='".$count['products_id']."' AND pd.language_id='".$languages_id."')");
   while ($aount = tep_db_fetch_array($a_query)) {
     $product ['name'] = addslashes($aount['products_name']);
 // CLEANUP THE DESCRIPTION AND CUT TO SIZE
@@ -175,9 +175,9 @@ while ($count = tep_db_fetch_array($c_query)) {
       }
     $product ['id']= $count['products_id'];
     if ((DISPLAY_PRICE_WITH_TAX) && ($cpb_build_show_tax)) {
-      $b_query = tep_db_query("select products_price, products_image, products_tax_class_id from " . TABLE_PRODUCTS . " p where " . $filter_product . " products_id='".$count['products_id']."'");
+      $b_query = tep_db_query("select products_price, products_image, products_tax_class_id from products p where " . $filter_product . " products_id='".$count['products_id']."'");
     } else {
-      $b_query = tep_db_query("select products_price, products_image from " . TABLE_PRODUCTS . " p where " . $filter_product . " products_id='".$count['products_id']."'");
+      $b_query = tep_db_query("select products_price, products_image from products p where " . $filter_product . " products_id='".$count['products_id']."'");
     }
     $temps=tep_db_fetch_array($b_query);
 
@@ -206,15 +206,15 @@ for ($f = 0, $z = $acount; $f < $z; $f++) {
   $count2++;
   if ($cpb_use_dependence==1 && ($pcid[$_GET['row']] != $pcdcat[$_GET['row']]) && ($pcdcat[$_GET['row']] != 0)) {
     if ($strDependences != "(") {
-	$c_query = tep_db_query($strQueryProducts2="select pc.products_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$acategory[$temp][$f]."' and pc.products_id in ". $strDependences . $sort_product);
+	$c_query = tep_db_query($strQueryProducts2="select pc.products_id from products_to_categories pc, products p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$acategory[$temp][$f]."' and pc.products_id in ". $strDependences . $sort_product);
     } else {
-	$c_query = tep_db_query($strQueryProducts2="select pc.products_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$acategory[$temp][$f]."' " . $sort_product);
+	$c_query = tep_db_query($strQueryProducts2="select pc.products_id from products_to_categories pc, products p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$acategory[$temp][$f]."' " . $sort_product);
     }
   } else {
-    $c_query = tep_db_query($strQueryProducts2="select pc.products_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$acategory[$temp][$f]."' " . $sort_product);
+    $c_query = tep_db_query($strQueryProducts2="select pc.products_id from products_to_categories pc, products p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='".$acategory[$temp][$f]."' " . $sort_product);
   }
   while ($count = tep_db_fetch_array($c_query)) {
-    $a_query = tep_db_query("select pd.products_name, pd.products_description from " . TABLE_PRODUCTS_DESCRIPTION . " pd, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pd.products_id and (pd.products_id='".$count['products_id']."' AND pd.language_id='".$languages_id."')");
+    $a_query = tep_db_query("select pd.products_name, pd.products_description from products_description pd, products p where " . $filter_product . " p.products_id = pd.products_id and (pd.products_id='".$count['products_id']."' AND pd.language_id='".$languages_id."')");
     while ($aount = tep_db_fetch_array($a_query)) {
       $product ['name'] = addslashes($aount['products_name']);
 // CLEANUP THE DESCRIPTION AND CUT TO SIZE
@@ -233,9 +233,9 @@ for ($f = 0, $z = $acount; $f < $z; $f++) {
       }
       $product ['id']= $count['products_id'];
     if ((DISPLAY_PRICE_WITH_TAX) && ($cpb_build_show_tax)) {
-        $b_query = tep_db_query("select products_price, products_image, products_tax_class_id from " . TABLE_PRODUCTS . " p where " . $filter_product . " products_id='".$count['products_id']."'");
+        $b_query = tep_db_query("select products_price, products_image, products_tax_class_id from products p where " . $filter_product . " products_id='".$count['products_id']."'");
       } else {
-        $b_query = tep_db_query("select products_price, products_image from " . TABLE_PRODUCTS . " p where " . $filter_product . " products_id='".$count['products_id']."'");
+        $b_query = tep_db_query("select products_price, products_image from products p where " . $filter_product . " products_id='".$count['products_id']."'");
       }
       $temps=tep_db_fetch_array($b_query);
 
@@ -318,10 +318,10 @@ function print_deselect(title,pindex){
 if ($_GET['row']==$_GET['assemb_id']) {
   $textshow['assembly'].="print_deselect('"."<font color=\"red\">".TEXT_DESELECT_ITEM."</font>"."','".$_GET['pindex']."');\n";
   $textshow['assembly'].="print_title('". ASSEMBLY . TEXT_SELECT_ITEM ."'); \n";
-  $c_query = tep_db_query("select pc.products_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " pc, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='" . (int)$cpb_assembly_osccat . "' " . $sort_product);
+  $c_query = tep_db_query("select pc.products_id from products_to_categories pc, products p where " . $filter_product . " p.products_id = pc.products_id and pc.categories_id='" . (int)$cpb_assembly_osccat . "' " . $sort_product);
   $count2=0;
   while ($count = tep_db_fetch_array($c_query)) {
-    $a_query = tep_db_query("select pd.products_name, pd.products_description from " . TABLE_PRODUCTS_DESCRIPTION . " pd, " . TABLE_PRODUCTS . " p where " . $filter_product . " p.products_id = pd.products_id and (pd.products_id='".$count['products_id']."' AND pd.language_id='".$languages_id."')");
+    $a_query = tep_db_query("select pd.products_name, pd.products_description from products_description pd, products p where " . $filter_product . " p.products_id = pd.products_id and (pd.products_id='".$count['products_id']."' AND pd.language_id='".$languages_id."')");
     while ($aount = tep_db_fetch_array($a_query)){
       $assembly_fees['name'] = addslashes($aount['products_name']);
 
@@ -341,9 +341,9 @@ if ($_GET['row']==$_GET['assemb_id']) {
       }
       $assembly_fees['id']= $count['products_id'];
     if ((DISPLAY_PRICE_WITH_TAX) && ($cpb_build_show_tax)) {
-        $b_query = tep_db_query("select products_price, products_image, products_tax_class_id from " . TABLE_PRODUCTS . " p where " . $filter_product . " products_id='".$count['products_id']."'");
+        $b_query = tep_db_query("select products_price, products_image, products_tax_class_id from products p where " . $filter_product . " products_id='".$count['products_id']."'");
       } else {
-        $b_query = tep_db_query("select products_price, products_image from " . TABLE_PRODUCTS . " p where " . $filter_product . " products_id='".$count['products_id']."'");
+        $b_query = tep_db_query("select products_price, products_image from products p where " . $filter_product . " products_id='".$count['products_id']."'");
       }
       $temps=tep_db_fetch_array($b_query);
 

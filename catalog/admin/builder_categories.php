@@ -12,7 +12,7 @@
 
 require('includes/application_top.php');
 
-$action = (isset($HTTP_GET_VARS['action']) ? $HTTP_GET_VARS['action'] : '');
+$action = (isset($_GET['action']) ? $_GET['action'] : '');
 if (tep_not_null($action)) {
   switch ($action) {
 
@@ -20,11 +20,11 @@ if (tep_not_null($action)) {
     case 'update':
 
 // create tables if they dont exist ---------------------------
-      if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . "'"))==1) {
+      if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_options'"))==1) {
 
 // update categories
         $pcount=0;
-        $pbcomp_query = tep_db_query("select * from " . TABLE_BUILDER_CATEGORIES . " ORDER BY cpb_category_id");
+        $pbcomp_query = tep_db_query("select * from builder_categories ORDER BY cpb_category_id");
         while ($pbcomp = tep_db_fetch_array($pbcomp_query)){
           $temp = $pbcomp['cpb_category_name'];
           $temp1 = $_POST{editid.$pcount};
@@ -32,16 +32,16 @@ if (tep_not_null($action)) {
           $temp3 = $_POST{editimage.$pcount};
           $temp4 = $_POST{newdepcat.$pcount};
           if ($temp1 != $pbcomp['cpb_category_id']) {
-            $did_update = 1; tep_db_query("UPDATE " . TABLE_BUILDER_CATEGORIES . " SET cpb_category_id ='".$temp1."' WHERE cpb_category_name ='".$temp."'");
+            $did_update = 1; tep_db_query("UPDATE builder_categories SET cpb_category_id ='".$temp1."' WHERE cpb_category_name ='".$temp."'");
           }
           if ($temp2 != $pbcomp['osc_category_id']) {
-            $did_update = 1; tep_db_query("UPDATE " . TABLE_BUILDER_CATEGORIES . " SET osc_category_id ='".$temp2."' WHERE cpb_category_name ='".$temp."'");
+            $did_update = 1; tep_db_query("UPDATE builder_categories SET osc_category_id ='".$temp2."' WHERE cpb_category_name ='".$temp."'");
           }
           if ($temp3 != $pbcomp['cpb_category_image']) {
-            $did_update = 1; tep_db_query("UPDATE " . TABLE_BUILDER_CATEGORIES . " SET cpb_category_image ='".$temp3."' WHERE cpb_category_name ='".$temp."'");
+            $did_update = 1; tep_db_query("UPDATE builder_categories SET cpb_category_image ='".$temp3."' WHERE cpb_category_name ='".$temp."'");
           }
           if ($temp4 != $pbcomp['cpb_depends_category_id']) {
-            $did_update = 1; tep_db_query("UPDATE " . TABLE_BUILDER_CATEGORIES . " SET cpb_depends_category_id ='".$temp4."' WHERE cpb_category_name ='".$temp."'");
+            $did_update = 1; tep_db_query("UPDATE builder_categories SET cpb_depends_category_id ='".$temp4."' WHERE cpb_category_name ='".$temp."'");
           }
           if ($did_update == 1) {
             $did_update = ""; $messageStack->add_session("Category $temp updated successfully", 'success');
@@ -56,10 +56,10 @@ if (tep_not_null($action)) {
         $newoscat = $_POST{newoscat};
         
         if( $newrow != "") {
-          $result1_query = tep_db_query("select cpb_category_id FROM " . TABLE_BUILDER_CATEGORIES . " WHERE cpb_category_name = '".$newrow."'");
+          $result1_query = tep_db_query("select cpb_category_id FROM builder_categories WHERE cpb_category_name = '".$newrow."'");
           $result1 = tep_db_num_rows($result1_query);
           if ($result1 != 1) {
-            $result1 = tep_db_query("INSERT INTO " . TABLE_BUILDER_CATEGORIES . " (`cpb_category_id` , `cpb_depends_category_id`, `cpb_category_name` , `cpb_category_image` , `osc_category_id`) VALUES ('".$neworder."' , '0', '".$newrow."' , '$newimage' , '$newoscat');");
+            $result1 = tep_db_query("INSERT INTO builder_categories (`cpb_category_id` , `cpb_depends_category_id`, `cpb_category_name` , `cpb_category_image` , `osc_category_id`) VALUES ('".$neworder."' , '0', '".$newrow."' , '$newimage' , '$newoscat');");
             if ($result1 == 1) {
               $messageStack->add_session("New Builder category '$newrow' added successfully", 'success');
             } else {
@@ -76,10 +76,10 @@ if (tep_not_null($action)) {
         $delrow = $_POST{delrow};
         
         if ( $delrow != "") {
-          $result1_query = tep_db_query("select cpb_category_id FROM " . TABLE_BUILDER_CATEGORIES . " WHERE cpb_category_name = '".$delrow."'");
+          $result1_query = tep_db_query("select cpb_category_id FROM builder_categories WHERE cpb_category_name = '".$delrow."'");
           $result1 = tep_db_num_rows($result1_query);
           if ($result1 > 0) {
-            $osc_cat_query_raw = "select osc_category_id, cpb_depends_category_id, cpb_category_id FROM " . TABLE_BUILDER_CATEGORIES . "  where cpb_category_name = '".$delrow."'";
+            $osc_cat_query_raw = "select osc_category_id, cpb_depends_category_id, cpb_category_id FROM builder_categories  where cpb_category_name = '".$delrow."'";
             $osc_cat_query = tep_db_query($osc_cat_query_raw);
             $builder_category = tep_db_fetch_array($osc_cat_query);
             $list_of_categories[] = $builder_category['osc_category_id'];
@@ -94,7 +94,7 @@ if (tep_not_null($action)) {
               unset($subcategories_array);
             }
             $where_str .= ")";
-            $products_query_raw = "select products_id FROM " . TABLE_PRODUCTS_TO_CATEGORIES . " where " . $where_str . " ORDER BY products_id";
+            $products_query_raw = "select products_id FROM products_to_categories where " . $where_str . " ORDER BY products_id";
             $products_query = tep_db_query($products_query_raw);
             $where_str="";
             $x=0;
@@ -106,10 +106,10 @@ if (tep_not_null($action)) {
               }
               $x++;
             }
-            $result3 = tep_db_query("UPDATE " . TABLE_BUILDER_CATEGORIES . " SET cpb_depends_category_id = '0' WHERE cpb_depends_category_id ='" . (int)$builder_category['cpb_category_id'] . "'");
-            $result1 = tep_db_query("DELETE FROM " . TABLE_BUILDER_CATEGORIES . " WHERE cpb_category_name = '".$delrow."'");
+            $result3 = tep_db_query("UPDATE builder_categories SET cpb_depends_category_id = '0' WHERE cpb_depends_category_id ='" . (int)$builder_category['cpb_category_id'] . "'");
+            $result1 = tep_db_query("DELETE FROM builder_categories WHERE cpb_category_name = '".$delrow."'");
             if (tep_db_num_rows($products_query)) {
-              $result2 = tep_db_query("DELETE FROM " . TABLE_BUILDER_DEPENDENCES . " WHERE " . $where_str);
+              $result2 = tep_db_query("DELETE FROM builder_dependences WHERE " . $where_str);
             }
             if ($result1 != 0) {
               $messageStack->add_session("Builder category '$delrow' removed successfully", 'success');
@@ -136,13 +136,13 @@ if (tep_not_null($action)) {
         $torow = $_POST{torow};
         
         if( $fromrow != "" && ( $torow != "" )) {
-          $result1_query = tep_db_query("select cpb_category_id FROM " . TABLE_BUILDER_CATEGORIES . " WHERE cpb_category_name = '".$fromrow."'");
+          $result1_query = tep_db_query("select cpb_category_id FROM builder_categories WHERE cpb_category_name = '".$fromrow."'");
           $result1 = tep_db_num_rows($result1_query);
-          $result2_query = tep_db_query("select cpb_category_id FROM " . TABLE_BUILDER_CATEGORIES . " WHERE cpb_category_name = '".$torow."'");
+          $result2_query = tep_db_query("select cpb_category_id FROM builder_categories WHERE cpb_category_name = '".$torow."'");
           $result2 = tep_db_num_rows($result2_query);
           if ($result1 == 1) {
             if ($result2 != 1){
-              $result1 = tep_db_query("UPDATE " . TABLE_BUILDER_CATEGORIES . " SET cpb_category_name ='".$torow."' WHERE cpb_category_name ='".$fromrow."'");
+              $result1 = tep_db_query("UPDATE builder_categories SET cpb_category_name ='".$torow."' WHERE cpb_category_name ='".$fromrow."'");
               if ($result1 == 1) {
                 $messageStack->add_session("Builder category '$fromrow' renamed to '$torow' successfully", 'success');
               } else {
@@ -164,13 +164,13 @@ if (tep_not_null($action)) {
     break;
   }
 } else {
-  if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . "'"))!=1) {
+  if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_options'"))!=1) {
     tep_redirect(tep_href_link('builder_options.php'));
   }
 
 // Get info from OSC categories discription table
   $count=0;
-  $c_query = tep_db_query("select categories_name, categories_id from " . TABLE_CATEGORIES_DESCRIPTION . " where language_id ='".(int)$languages_id."' ORDER BY categories_id");
+  $c_query = tep_db_query("select categories_name, categories_id from categories_description where language_id ='".(int)$languages_id."' ORDER BY categories_id");
   while ($c_value = tep_db_fetch_array($c_query)){
     $category['name'][$count]=$c_value['categories_name'];
     $category['id'][$count]=$c_value['categories_id'];
@@ -179,7 +179,7 @@ if (tep_not_null($action)) {
 
 // Get info from OSC categories table
   $count=0;
-  $c_query = tep_db_query("select categories_id, parent_id from " . TABLE_CATEGORIES . " ORDER BY categories_id");
+  $c_query = tep_db_query("select categories_id, parent_id from categories ORDER BY categories_id");
   while ($c_value = tep_db_fetch_array($c_query)){
     if ($c_value['parent_id'] != "0") {
       $category['name'][$count] = "--".$category['name'][$count];
@@ -188,10 +188,10 @@ if (tep_not_null($action)) {
   }
 
 // be sure the tables already exist
-  if(tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_CATEGORIES. "'"))==1) {
+  if(tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_categories'"))==1) {
 
 // get options
-    $cbcomp_query = tep_db_query("select * from " . TABLE_BUILDER_OPTIONS);
+    $cbcomp_query = tep_db_query("select * from builder_options");
     while ($cbcomp = tep_db_fetch_array($cbcomp_query)) {
       $cpb_product_builder_name= $cbcomp['cpb_product_builder_name'];
       $cpb_product_builder_image= $cbcomp['cpb_product_builder_image'];
@@ -200,7 +200,7 @@ if (tep_not_null($action)) {
 
 // get categories
     $pcount=0;
-    $bcomp_query = tep_db_query("select * from " . TABLE_BUILDER_CATEGORIES. " ORDER BY cpb_category_id");
+    $bcomp_query = tep_db_query("select * from builder_categories ORDER BY cpb_category_id");
     while ($bcomp = tep_db_fetch_array($bcomp_query)){
       $pcid[$pcount]= $bcomp['cpb_category_id'];
       $pccat[$pcount]= $bcomp['cpb_category_name'];

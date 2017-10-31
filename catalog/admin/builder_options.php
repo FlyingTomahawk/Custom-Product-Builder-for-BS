@@ -12,7 +12,7 @@
 
 require('includes/application_top.php');
 
-$action = (isset($HTTP_GET_VARS['action']) ? $HTTP_GET_VARS['action'] : '');
+$action = (isset($_GET['action']) ? $_GET['action'] : '');
 if (tep_not_null($action)) {
   switch ($action) {
 
@@ -20,13 +20,13 @@ if (tep_not_null($action)) {
     case 'update':
 
 // create tables if they dont exist ---------------------------
-      if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . "'"))!=1) {
-        tep_db_query("DROP TABLE IF EXISTS " . TABLE_BUILDER_CATEGORIES . ";");
-        tep_db_query("DROP TABLE IF EXISTS " . TABLE_BUILDER_DEPENDENCES . ";");
+      if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_options'"))!=1) {
+        tep_db_query("DROP TABLE IF EXISTS builder_categories;");
+        tep_db_query("DROP TABLE IF EXISTS builder_dependences;");
 
 // options table
         $result1 = tep_db_query("
-          CREATE TABLE " . TABLE_BUILDER_OPTIONS . " (
+          CREATE TABLE builder_options (
   `cpb_system_assembly` tinyint(1) NOT NULL default '0',
   `cpb_assembly_osccat` int(11) NOT NULL default '0',
   `cpb_use_dependence` tinyint(1) NOT NULL default '1',
@@ -115,12 +115,12 @@ if (tep_not_null($action)) {
   `cpb_build_image_upload_folder` varchar(255) NOT NULL default 'builder/uploads/'
         );");
         $result2 = tep_db_query("
-INSERT INTO " . TABLE_BUILDER_OPTIONS . "
+INSERT INTO builder_options
 (`cpb_system_assembly`, `cpb_assembly_osccat`, `cpb_use_dependence`, `cpb_use_software`, `cpb_build_osccat`, `cpb_build_name`, `cpb_build_description`, `cpb_build_image`, `cpb_build_url`, `cpb_build_model`, `cpb_reduce_stock`, `cpb_build_one_product`, `cpb_popup_height`, `cpb_popup_offset_left`, `cpb_popup_offset_top`, `cpb_show_nostock`, `cpb_show_disabled`, `cpb_ignore_specials`, `cpb_build_allow_name`, `cpb_build_allow_description`, `cpb_build_allow_image`, `cpb_build_model_suffix`, `cpb_auto_delete_time`, `cpb_build_allow_nostock`, `cpb_build_allow_disabled`, `cpb_build_allow_disable_product`, `cpb_product_builder_name`, `cpb_product_builder_image`, `cpb_product_builder_image_tag`, `cpb_popup_show_product_image`, `cpb_build_show_product_image`, `cpb_build_show_product_quantity`, `cpb_build_show_built_by`, `cpb_build_product_image_height`, `cpb_build_product_image_width`, `cpb_popup_product_image_height`, `cpb_popup_product_image_width`, `cpb_product_images_folder`, `cpb_category_images_folder`, `cpb_catalog_images_folder`, `cpb_build_product_price_fix`, `cpb_build_assembly_image`, `cpb_build_allow_set_type`, `cpb_matrix_edit_default_lines_per_page`, `cpb_matrix_edit_show_nostock`, `cpb_matrix_edit_show_disabled`, `cpb_build_short_description_length`, `cpb_build_show_short_description`, `cpb_popup_short_description_length`, `cpb_popup_show_short_description`, `cpb_build_auto_clear_list`, `cpb_build_auto_clear_count`, `cpb_build_show_url`, `cpb_build_url_suffix`, `cpb_build_priority`, `cpb_build_priority_count`, `cpb_build_price_in_description`, `cpb_build_in_reverse`, `cpb_build_priority_depends_only`, `cpb_build_allow_built_by`, `cpb_build_preview_single`, `cpb_build_component_qty_max`, `cpb_build_product_status_default`, `cpb_build_product_stock_default`, `cpb_build_assembly_fee_name`, `cpb_build_product_details_ontop`, `cpb_build_unsort_components`, `cpb_popup_sort_by_price`, `cpb_build_built_by_default`, `cpb_build_disable_after_carted`, `cpb_auto_disable_time`, `cpb_build_manufacturer_id_default`, `cpb_build_name_suffix`, `cpb_build_cart_reset`, `cpb_build_id_in_description`, `cpb_build_show_category_image`, `cpb_build_category_image_height`, `cpb_build_category_image_width`, `cpb_build_product_tax_class_default`, `cpb_ignore_tax`, `cpb_build_show_tax`, `cpb_build_minimum_order`, `cpb_build_minimum_order_count`, `cpb_build_allow_image_upload`, `cpb_build_image_upload_size`, `cpb_build_image_upload_folder`) VALUES (1, 21, 0, 0, 22, 'Custom Product', 'This product was assembled online using a custom product builder.', 'custom_product.gif', '', 'custom', 0, 1, 300, 100, 0, 0, 0, 1, 1, 1, 1, 1, 2, 0, 0, 1, 'Custom Product Builder', 'custom_product_builder.gif', 'table_background_builder.gif', 1, 1, 1, 0, 28, 28, 28, 28, 'builder/products/', 'builder/', 'images/', 1, 'componenta.gif', 0, 70, 0, 0, 20, 1, 30, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 10, 1, 1, 'Assembly Fee', 1, 1, 1, 'Guest', 0, 1, 6, 1, 1, 1, 1, 22, 166, 1, 1, 1, 0, 0, 1, 81920, 'builder/uploads/');
         ");
 
 // categories table
-        $result3 = tep_db_query("CREATE TABLE " . TABLE_BUILDER_CATEGORIES . " (
+        $result3 = tep_db_query("CREATE TABLE builder_categories (
           `cpb_category_id` INT( 11 ) NOT NULL ,
           `cpb_depends_category_id` INT( 11 ) NOT NULL ,
           `cpb_category_name` VARCHAR( 32 ) NOT NULL ,
@@ -129,21 +129,21 @@ INSERT INTO " . TABLE_BUILDER_OPTIONS . "
         );");
 
 // dependences table
-        $result3_1 = tep_db_query("CREATE TABLE " . TABLE_BUILDER_DEPENDENCES . " (
+        $result3_1 = tep_db_query("CREATE TABLE builder_dependences (
           `product1_id` INT( 11 ) NOT NULL ,
           `product2_id` INT( 11 ) NOT NULL
         );");
 
 // populate categories with some examples
-        $result4 = tep_db_query("INSERT INTO " . TABLE_BUILDER_CATEGORIES . " (
+        $result4 = tep_db_query("INSERT INTO builder_categories (
           `cpb_category_id` , `cpb_depends_category_id`,  `cpb_category_name` ,`cpb_category_image`, `osc_category_id`)
           VALUES ( '10' , '0' , 'Component 1' , 'component1.gif' , '0'
         );");
-        $result5 = tep_db_query("INSERT INTO " . TABLE_BUILDER_CATEGORIES . " (
+        $result5 = tep_db_query("INSERT INTO builder_categories (
           `cpb_category_id` , `cpb_depends_category_id`,  `cpb_category_name` ,`cpb_category_image`, `osc_category_id`)
           VALUES ( '20' , '10' , 'Component 2' , 'component2.gif' , '0'
         );");
-        $result6 = tep_db_query("INSERT INTO " . TABLE_BUILDER_CATEGORIES . " (
+        $result6 = tep_db_query("INSERT INTO builder_categories (
           `cpb_category_id` , `cpb_depends_category_id`,  `cpb_category_name` ,`cpb_category_image`, `osc_category_id`)
           VALUES ( '30' , '20' , 'Component 3' , 'component3.gif' , '0'
         );");
@@ -154,7 +154,7 @@ INSERT INTO " . TABLE_BUILDER_OPTIONS . "
 // before modifying the products and attributes file check if the new fields already exist - add those that arent
           $result4 = "builder_product_flag";
           $result1 = false;
-          $result2 = tep_db_query("show columns from " . TABLE_PRODUCTS);
+          $result2 = tep_db_query("show columns from products");
           while($result3 = tep_db_fetch_array($result2)){
             if($result3['Field'] == $result4){
               $result1 = true;
@@ -162,11 +162,11 @@ INSERT INTO " . TABLE_BUILDER_OPTIONS . "
             }
           }
           if(!$result1){
-            tep_db_query("ALTER TABLE " . TABLE_PRODUCTS . " ADD COLUMN `builder_product_flag` tinyint(1) NOT NULL default '0'");
+            tep_db_query("ALTER TABLE products ADD COLUMN `builder_product_flag` tinyint(1) NOT NULL default '0'");
           }
           $result4 = "catalog_products_id";
           $result1 = false;
-          $result2 = tep_db_query("show columns from " . TABLE_PRODUCTS_OPTIONS_VALUES);
+          $result2 = tep_db_query("show columns from products_options_values");
           while($result3 = tep_db_fetch_array($result2)){
             if($result3['Field'] == $result4){
               $result1 = true;
@@ -174,11 +174,11 @@ INSERT INTO " . TABLE_BUILDER_OPTIONS . "
             }
           }
           if(!$result1){
-            tep_db_query("ALTER TABLE " . TABLE_PRODUCTS_OPTIONS_VALUES . " ADD COLUMN `catalog_products_id` int(11) DEFAULT NULL");
+            tep_db_query("ALTER TABLE products_options_values ADD COLUMN `catalog_products_id` int(11) DEFAULT NULL");
           }
           $result4 = "catalog_products_quantity";
           $result1 = false;
-          $result2 = tep_db_query("show columns from " . TABLE_PRODUCTS_OPTIONS_VALUES);
+          $result2 = tep_db_query("show columns from products_options_values");
           while($result3 = tep_db_fetch_array($result2)){
             if($result3['Field'] == $result4){
               $result1 = true;
@@ -186,7 +186,7 @@ INSERT INTO " . TABLE_BUILDER_OPTIONS . "
             }
           }
           if(!$result1){
-            tep_db_query("ALTER TABLE " . TABLE_PRODUCTS_OPTIONS_VALUES . " ADD COLUMN `catalog_products_quantity` int(2) NULL default '1'");
+            tep_db_query("ALTER TABLE products_options_values ADD COLUMN `catalog_products_quantity` int(2) NULL default '1'");
           }
 
         } else {
@@ -285,259 +285,259 @@ INSERT INTO " . TABLE_BUILDER_OPTIONS . "
 
 // update options
 
-        $cbcomp_query = tep_db_query("select * from " . TABLE_BUILDER_OPTIONS);
+        $cbcomp_query = tep_db_query("select * from builder_options");
         while ($cbcomp = tep_db_fetch_array($cbcomp_query)){
           if (($cpb_system_assembly != "")&($cpb_system_assembly != $cbcomp['cpb_system_assembly'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_system_assembly ='".$cpb_system_assembly."' WHERE cpb_system_assembly ='".$cbcomp['cpb_system_assembly']."'");
+            tep_db_query("UPDATE builder_options SET cpb_system_assembly ='".$cpb_system_assembly."' WHERE cpb_system_assembly ='".$cbcomp['cpb_system_assembly']."'");
           }
           if (($cpb_assembly_osccat != "")&($cpb_assembly_osccat != $cbcomp['cpb_assembly_osccat'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_assembly_osccat ='".$cpb_assembly_osccat."' WHERE cpb_assembly_osccat ='".$cbcomp['cpb_assembly_osccat']."'");
+            tep_db_query("UPDATE builder_options SET cpb_assembly_osccat ='".$cpb_assembly_osccat."' WHERE cpb_assembly_osccat ='".$cbcomp['cpb_assembly_osccat']."'");
           }
           if (($cpb_use_dependence != "")&($cpb_use_dependence != $cbcomp['cpb_use_dependence'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_use_dependence ='".$cpb_use_dependence."' WHERE cpb_use_dependence ='".$cbcomp['cpb_use_dependence']."'");
+            tep_db_query("UPDATE builder_options SET cpb_use_dependence ='".$cpb_use_dependence."' WHERE cpb_use_dependence ='".$cbcomp['cpb_use_dependence']."'");
           }
           if (($cpb_use_software != "")&($cpb_use_software != $cbcomp['cpb_use_software'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_use_software ='".$cpb_use_software."' WHERE cpb_use_software ='".$cbcomp['cpb_use_software']."'");
+            tep_db_query("UPDATE builder_options SET cpb_use_software ='".$cpb_use_software."' WHERE cpb_use_software ='".$cbcomp['cpb_use_software']."'");
           }
           if (($cpb_build_osccat != "")&($cpb_build_osccat != $cbcomp['cpb_build_osccat'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_osccat ='".$cpb_build_osccat."' WHERE cpb_build_osccat ='".$cbcomp['cpb_build_osccat']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_osccat ='".$cpb_build_osccat."' WHERE cpb_build_osccat ='".$cbcomp['cpb_build_osccat']."'");
           }
           if (($cpb_build_name != "")&($cpb_build_name != $cbcomp['cpb_build_name'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_name ='".$cpb_build_name."' WHERE cpb_build_name ='".$cbcomp['cpb_build_name']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_name ='".$cpb_build_name."' WHERE cpb_build_name ='".$cbcomp['cpb_build_name']."'");
           }
           if (($cpb_build_description != "")&($cpb_build_description != $cbcomp['cpb_build_description'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_description ='".$cpb_build_description."' WHERE cpb_build_description ='".$cbcomp['cpb_build_description']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_description ='".$cpb_build_description."' WHERE cpb_build_description ='".$cbcomp['cpb_build_description']."'");
           }
           if (($cpb_build_image != "")&($cpb_build_image != $cbcomp['cpb_build_image'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_image ='".$cpb_build_image."' WHERE cpb_build_image ='".$cbcomp['cpb_build_image']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_image ='".$cpb_build_image."' WHERE cpb_build_image ='".$cbcomp['cpb_build_image']."'");
           }
           if (($cpb_build_url != $cbcomp['cpb_build_url'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_url ='".$cpb_build_url."' WHERE cpb_build_url ='".$cbcomp['cpb_build_url']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_url ='".$cpb_build_url."' WHERE cpb_build_url ='".$cbcomp['cpb_build_url']."'");
           }
           if (($cpb_build_model != "")&($cpb_build_model != $cbcomp['cpb_build_model'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_model ='".$cpb_build_model."' WHERE cpb_build_model ='".$cbcomp['cpb_build_model']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_model ='".$cpb_build_model."' WHERE cpb_build_model ='".$cbcomp['cpb_build_model']."'");
           }
           if (($cpb_reduce_stock != "")&($cpb_reduce_stock != $cbcomp['cpb_reduce_stock'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_reduce_stock ='".$cpb_reduce_stock."' WHERE cpb_reduce_stock ='".$cbcomp['cpb_reduce_stock']."'");
+            tep_db_query("UPDATE builder_options SET cpb_reduce_stock ='".$cpb_reduce_stock."' WHERE cpb_reduce_stock ='".$cbcomp['cpb_reduce_stock']."'");
           }
           if (($cpb_build_one_product != "")&($cpb_build_one_product != $cbcomp['cpb_build_one_product'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_one_product ='".$cpb_build_one_product."' WHERE cpb_build_one_product ='".$cbcomp['cpb_build_one_product']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_one_product ='".$cpb_build_one_product."' WHERE cpb_build_one_product ='".$cbcomp['cpb_build_one_product']."'");
           }
           if (($cpb_popup_height != "")&($cpb_popup_height != $cbcomp['cpb_popup_height'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_popup_height ='".$cpb_popup_height."' WHERE cpb_popup_height ='".$cbcomp['cpb_popup_height']."'");
+            tep_db_query("UPDATE builder_options SET cpb_popup_height ='".$cpb_popup_height."' WHERE cpb_popup_height ='".$cbcomp['cpb_popup_height']."'");
           }
           if (($cpb_popup_offset_left != "")&($cpb_popup_offset_left != $cbcomp['cpb_popup_offset_left'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_popup_offset_left ='".$cpb_popup_offset_left."' WHERE cpb_popup_offset_left ='".$cbcomp['cpb_popup_offset_left']."'");
+            tep_db_query("UPDATE builder_options SET cpb_popup_offset_left ='".$cpb_popup_offset_left."' WHERE cpb_popup_offset_left ='".$cbcomp['cpb_popup_offset_left']."'");
           }
           if (($cpb_popup_offset_top != "")&($cpb_popup_offset_top != $cbcomp['cpb_popup_offset_top'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_popup_offset_top ='".$cpb_popup_offset_top."' WHERE cpb_popup_offset_top ='".$cbcomp['cpb_popup_offset_top']."'");
+            tep_db_query("UPDATE builder_options SET cpb_popup_offset_top ='".$cpb_popup_offset_top."' WHERE cpb_popup_offset_top ='".$cbcomp['cpb_popup_offset_top']."'");
           }
           if (($cpb_show_nostock != "")&($cpb_show_nostock != $cbcomp['cpb_show_nostock'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_show_nostock ='".$cpb_show_nostock."' WHERE cpb_show_nostock ='".$cbcomp['cpb_show_nostock']."'");
+            tep_db_query("UPDATE builder_options SET cpb_show_nostock ='".$cpb_show_nostock."' WHERE cpb_show_nostock ='".$cbcomp['cpb_show_nostock']."'");
           }
           if (($cpb_show_disabled != "")&($cpb_show_disabled != $cbcomp['cpb_show_disabled'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_show_disabled ='".$cpb_show_disabled."' WHERE cpb_show_disabled ='".$cbcomp['cpb_show_disabled']."'");
+            tep_db_query("UPDATE builder_options SET cpb_show_disabled ='".$cpb_show_disabled."' WHERE cpb_show_disabled ='".$cbcomp['cpb_show_disabled']."'");
           }
           if (($cpb_ignore_specials != "")&($cpb_ignore_specials != $cbcomp['cpb_ignore_specials'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_ignore_specials ='".$cpb_ignore_specials."' WHERE cpb_ignore_specials ='".$cbcomp['cpb_ignore_specials']."'");
+            tep_db_query("UPDATE builder_options SET cpb_ignore_specials ='".$cpb_ignore_specials."' WHERE cpb_ignore_specials ='".$cbcomp['cpb_ignore_specials']."'");
           }
           if (($cpb_build_allow_name != "")&($cpb_build_allow_name != $cbcomp['cpb_build_allow_name'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_allow_name ='".$cpb_build_allow_name."' WHERE cpb_build_allow_name ='".$cbcomp['cpb_build_allow_name']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_allow_name ='".$cpb_build_allow_name."' WHERE cpb_build_allow_name ='".$cbcomp['cpb_build_allow_name']."'");
           }
           if (($cpb_build_allow_description != "")&($cpb_build_allow_description != $cbcomp['cpb_build_allow_description'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_allow_description ='".$cpb_build_allow_description."' WHERE cpb_build_allow_description ='".$cbcomp['cpb_build_allow_description']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_allow_description ='".$cpb_build_allow_description."' WHERE cpb_build_allow_description ='".$cbcomp['cpb_build_allow_description']."'");
           }
           if (($cpb_build_allow_image != "")&($cpb_build_allow_image != $cbcomp['cpb_build_allow_image'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_allow_image ='".$cpb_build_allow_image."' WHERE cpb_build_allow_image ='".$cbcomp['cpb_build_allow_image']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_allow_image ='".$cpb_build_allow_image."' WHERE cpb_build_allow_image ='".$cbcomp['cpb_build_allow_image']."'");
           }
           if (($cpb_build_model_suffix != "")&($cpb_build_model_suffix != $cbcomp['cpb_build_model_suffix'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_model_suffix ='".$cpb_build_model_suffix."' WHERE cpb_build_model_suffix ='".$cbcomp['cpb_build_model_suffix']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_model_suffix ='".$cpb_build_model_suffix."' WHERE cpb_build_model_suffix ='".$cbcomp['cpb_build_model_suffix']."'");
           }
           if (($cpb_auto_delete_time != "")&($cpb_auto_delete_time != $cbcomp['cpb_auto_delete_time'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_auto_delete_time ='".$cpb_auto_delete_time."' WHERE cpb_auto_delete_time ='".$cbcomp['cpb_auto_delete_time']."'");
+            tep_db_query("UPDATE builder_options SET cpb_auto_delete_time ='".$cpb_auto_delete_time."' WHERE cpb_auto_delete_time ='".$cbcomp['cpb_auto_delete_time']."'");
           }
           if (($cpb_build_allow_nostock != "")&($cpb_build_allow_nostock != $cbcomp['cpb_build_allow_nostock'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_allow_nostock ='".$cpb_build_allow_nostock."' WHERE cpb_build_allow_nostock ='".$cbcomp['cpb_build_allow_nostock']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_allow_nostock ='".$cpb_build_allow_nostock."' WHERE cpb_build_allow_nostock ='".$cbcomp['cpb_build_allow_nostock']."'");
           }
           if (($cpb_build_allow_disabled != "")&($cpb_build_allow_disabled != $cbcomp['cpb_build_allow_disabled'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_allow_disabled ='".$cpb_build_allow_disabled."' WHERE cpb_build_allow_disabled ='".$cbcomp['cpb_build_allow_disabled']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_allow_disabled ='".$cpb_build_allow_disabled."' WHERE cpb_build_allow_disabled ='".$cbcomp['cpb_build_allow_disabled']."'");
           }
           if (($cpb_build_allow_disable_product != "")&($cpb_build_allow_disable_product != $cbcomp['cpb_build_allow_disable_product'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_allow_disable_product ='".$cpb_build_allow_disable_product."' WHERE cpb_build_allow_disable_product ='".$cbcomp['cpb_build_allow_disable_product']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_allow_disable_product ='".$cpb_build_allow_disable_product."' WHERE cpb_build_allow_disable_product ='".$cbcomp['cpb_build_allow_disable_product']."'");
           }
           if (($cpb_product_builder_name != "")&($cpb_product_builder_name != $cbcomp['cpb_product_builder_name'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_product_builder_name ='".$cpb_product_builder_name."' WHERE cpb_product_builder_name ='".$cbcomp['cpb_product_builder_name']."'");
+            tep_db_query("UPDATE builder_options SET cpb_product_builder_name ='".$cpb_product_builder_name."' WHERE cpb_product_builder_name ='".$cbcomp['cpb_product_builder_name']."'");
           }
           if (($cpb_product_builder_image != "")&($cpb_product_builder_image != $cbcomp['cpb_product_builder_image'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_product_builder_image ='".$cpb_product_builder_image."' WHERE cpb_product_builder_image ='".$cbcomp['cpb_product_builder_image']."'");
+            tep_db_query("UPDATE builder_options SET cpb_product_builder_image ='".$cpb_product_builder_image."' WHERE cpb_product_builder_image ='".$cbcomp['cpb_product_builder_image']."'");
           }
           if (($cpb_popup_show_product_image != "")&($cpb_popup_show_product_image != $cbcomp['cpb_popup_show_product_image'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_popup_show_product_image ='".$cpb_popup_show_product_image."' WHERE cpb_popup_show_product_image ='".$cbcomp['cpb_popup_show_product_image']."'");
+            tep_db_query("UPDATE builder_options SET cpb_popup_show_product_image ='".$cpb_popup_show_product_image."' WHERE cpb_popup_show_product_image ='".$cbcomp['cpb_popup_show_product_image']."'");
           }
           if (($cpb_build_show_product_image != "")&($cpb_build_show_product_image != $cbcomp['cpb_build_show_product_image'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_show_product_image ='".$cpb_build_show_product_image."' WHERE cpb_build_show_product_image ='".$cbcomp['cpb_build_show_product_image']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_show_product_image ='".$cpb_build_show_product_image."' WHERE cpb_build_show_product_image ='".$cbcomp['cpb_build_show_product_image']."'");
           }
           if (($cpb_build_show_product_quantity != "")&($cpb_build_show_product_quantity != $cbcomp['cpb_build_show_product_quantity'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_show_product_quantity ='".$cpb_build_show_product_quantity."' WHERE cpb_build_show_product_quantity ='".$cbcomp['cpb_build_show_product_quantity']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_show_product_quantity ='".$cpb_build_show_product_quantity."' WHERE cpb_build_show_product_quantity ='".$cbcomp['cpb_build_show_product_quantity']."'");
           }
           if (($cpb_build_show_built_by != "")&($cpb_build_show_built_by != $cbcomp['cpb_build_show_built_by'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_show_built_by ='".$cpb_build_show_built_by."' WHERE cpb_build_show_built_by ='".$cbcomp['cpb_build_show_built_by']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_show_built_by ='".$cpb_build_show_built_by."' WHERE cpb_build_show_built_by ='".$cbcomp['cpb_build_show_built_by']."'");
           }
           if (($cpb_build_product_image_height != "")&($cpb_build_product_image_height != $cbcomp['cpb_build_product_image_height'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_product_image_height ='".$cpb_build_product_image_height."' WHERE cpb_build_product_image_height ='".$cbcomp['cpb_build_product_image_height']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_product_image_height ='".$cpb_build_product_image_height."' WHERE cpb_build_product_image_height ='".$cbcomp['cpb_build_product_image_height']."'");
           }
           if (($cpb_build_product_image_width != "")&($cpb_build_product_image_width != $cbcomp['cpb_build_product_image_width'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_product_image_width ='".$cpb_build_product_image_width."' WHERE cpb_build_product_image_width ='".$cbcomp['cpb_build_product_image_width']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_product_image_width ='".$cpb_build_product_image_width."' WHERE cpb_build_product_image_width ='".$cbcomp['cpb_build_product_image_width']."'");
           }
           if (($cpb_popup_product_image_height != "")&($cpb_popup_product_image_height != $cbcomp['cpb_popup_product_image_height'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_popup_product_image_height ='".$cpb_popup_product_image_height."' WHERE cpb_popup_product_image_height ='".$cbcomp['cpb_popup_product_image_height']."'");
+            tep_db_query("UPDATE builder_options SET cpb_popup_product_image_height ='".$cpb_popup_product_image_height."' WHERE cpb_popup_product_image_height ='".$cbcomp['cpb_popup_product_image_height']."'");
           }
           if (($cpb_popup_product_image_width != "")&($cpb_popup_product_image_width != $cbcomp['cpb_popup_product_image_width'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_popup_product_image_width ='".$cpb_popup_product_image_width."' WHERE cpb_popup_product_image_width ='".$cbcomp['cpb_popup_product_image_width']."'");
+            tep_db_query("UPDATE builder_options SET cpb_popup_product_image_width ='".$cpb_popup_product_image_width."' WHERE cpb_popup_product_image_width ='".$cbcomp['cpb_popup_product_image_width']."'");
           }
           if (($cpb_category_images_folder != "")&($cpb_category_images_folder != $cbcomp['cpb_category_images_folder'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_category_images_folder ='".$cpb_category_images_folder."' WHERE cpb_category_images_folder ='".$cbcomp['cpb_category_images_folder']."'");
+            tep_db_query("UPDATE builder_options SET cpb_category_images_folder ='".$cpb_category_images_folder."' WHERE cpb_category_images_folder ='".$cbcomp['cpb_category_images_folder']."'");
           }
           if (($cpb_product_images_folder != "")&($cpb_product_images_folder != $cbcomp['cpb_product_images_folder'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_product_images_folder ='".$cpb_product_images_folder."' WHERE cpb_product_images_folder ='".$cbcomp['cpb_product_images_folder']."'");
+            tep_db_query("UPDATE builder_options SET cpb_product_images_folder ='".$cpb_product_images_folder."' WHERE cpb_product_images_folder ='".$cbcomp['cpb_product_images_folder']."'");
           }
           if (($cpb_build_product_price_fix != "")&($cpb_build_product_price_fix != $cbcomp['cpb_build_product_price_fix'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_product_price_fix ='".$cpb_build_product_price_fix."' WHERE cpb_build_product_price_fix ='".$cbcomp['cpb_build_product_price_fix']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_product_price_fix ='".$cpb_build_product_price_fix."' WHERE cpb_build_product_price_fix ='".$cbcomp['cpb_build_product_price_fix']."'");
           }
           if (($cpb_build_assembly_image != "")&($cpb_build_assembly_image != $cbcomp['cpb_build_assembly_image'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_assembly_image ='".$cpb_build_assembly_image."' WHERE cpb_build_assembly_image ='".$cbcomp['cpb_build_assembly_image']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_assembly_image ='".$cpb_build_assembly_image."' WHERE cpb_build_assembly_image ='".$cbcomp['cpb_build_assembly_image']."'");
           }
           if (($cpb_build_allow_set_type != "")&($cpb_build_allow_set_type != $cbcomp['cpb_build_allow_set_type'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_allow_set_type ='".$cpb_build_allow_set_type."' WHERE cpb_build_allow_set_type ='".$cbcomp['cpb_build_allow_set_type']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_allow_set_type ='".$cpb_build_allow_set_type."' WHERE cpb_build_allow_set_type ='".$cbcomp['cpb_build_allow_set_type']."'");
           }
           if (($cpb_matrix_edit_default_lines_per_page != "")&($cpb_matrix_edit_default_lines_per_page != $cbcomp['cpb_matrix_edit_default_lines_per_page'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_matrix_edit_default_lines_per_page ='".$cpb_matrix_edit_default_lines_per_page."' WHERE cpb_matrix_edit_default_lines_per_page ='".$cbcomp['cpb_matrix_edit_default_lines_per_page']."'");
+            tep_db_query("UPDATE builder_options SET cpb_matrix_edit_default_lines_per_page ='".$cpb_matrix_edit_default_lines_per_page."' WHERE cpb_matrix_edit_default_lines_per_page ='".$cbcomp['cpb_matrix_edit_default_lines_per_page']."'");
           }
           if (($cpb_matrix_edit_show_nostock != "")&($cpb_matrix_edit_show_nostock != $cbcomp['cpb_matrix_edit_show_nostock'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_matrix_edit_show_nostock ='".$cpb_matrix_edit_show_nostock."' WHERE cpb_matrix_edit_show_nostock ='".$cbcomp['cpb_matrix_edit_show_nostock']."'");
+            tep_db_query("UPDATE builder_options SET cpb_matrix_edit_show_nostock ='".$cpb_matrix_edit_show_nostock."' WHERE cpb_matrix_edit_show_nostock ='".$cbcomp['cpb_matrix_edit_show_nostock']."'");
           }
           if (($cpb_matrix_edit_show_disabled != "")&($cpb_matrix_edit_show_disabled != $cbcomp['cpb_matrix_edit_show_disabled'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_matrix_edit_show_disabled ='".$cpb_matrix_edit_show_disabled."' WHERE cpb_matrix_edit_show_disabled ='".$cbcomp['cpb_matrix_edit_show_disabled']."'");
+            tep_db_query("UPDATE builder_options SET cpb_matrix_edit_show_disabled ='".$cpb_matrix_edit_show_disabled."' WHERE cpb_matrix_edit_show_disabled ='".$cbcomp['cpb_matrix_edit_show_disabled']."'");
           }
           if (($cpb_build_short_description_length != "")&($cpb_build_short_description_length != $cbcomp['cpb_build_short_description_length'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_short_description_length ='".$cpb_build_short_description_length."' WHERE cpb_build_short_description_length ='".$cbcomp['cpb_build_short_description_length']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_short_description_length ='".$cpb_build_short_description_length."' WHERE cpb_build_short_description_length ='".$cbcomp['cpb_build_short_description_length']."'");
           }
           if (($cpb_build_show_short_description != "")&($cpb_build_show_short_description != $cbcomp['cpb_build_show_short_description'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_show_short_description ='".$cpb_build_show_short_description."' WHERE cpb_build_show_short_description ='".$cbcomp['cpb_build_show_short_description']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_show_short_description ='".$cpb_build_show_short_description."' WHERE cpb_build_show_short_description ='".$cbcomp['cpb_build_show_short_description']."'");
           }
           if (($cpb_popup_short_description_length != "")&($cpb_popup_short_description_length != $cbcomp['cpb_popup_short_description_length'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_popup_short_description_length ='".$cpb_popup_short_description_length."' WHERE cpb_popup_short_description_length ='".$cbcomp['cpb_popup_short_description_length']."'");
+            tep_db_query("UPDATE builder_options SET cpb_popup_short_description_length ='".$cpb_popup_short_description_length."' WHERE cpb_popup_short_description_length ='".$cbcomp['cpb_popup_short_description_length']."'");
           }
           if (($cpb_popup_show_short_description != "")&($cpb_popup_show_short_description != $cbcomp['cpb_popup_show_short_description'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_popup_show_short_description ='".$cpb_popup_show_short_description."' WHERE cpb_popup_show_short_description ='".$cbcomp['cpb_popup_show_short_description']."'");
+            tep_db_query("UPDATE builder_options SET cpb_popup_show_short_description ='".$cpb_popup_show_short_description."' WHERE cpb_popup_show_short_description ='".$cbcomp['cpb_popup_show_short_description']."'");
           }
           if (($cpb_build_auto_clear_list != "")&($cpb_build_auto_clear_list != $cbcomp['cpb_build_auto_clear_list'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_auto_clear_list ='".$cpb_build_auto_clear_list."' WHERE cpb_build_auto_clear_list ='".$cbcomp['cpb_build_auto_clear_list']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_auto_clear_list ='".$cpb_build_auto_clear_list."' WHERE cpb_build_auto_clear_list ='".$cbcomp['cpb_build_auto_clear_list']."'");
           }
           if (($cpb_build_auto_clear_count != "")&($cpb_build_auto_clear_count != $cbcomp['cpb_build_auto_clear_count'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_auto_clear_count ='".$cpb_build_auto_clear_count."' WHERE cpb_build_auto_clear_count ='".$cbcomp['cpb_build_auto_clear_count']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_auto_clear_count ='".$cpb_build_auto_clear_count."' WHERE cpb_build_auto_clear_count ='".$cbcomp['cpb_build_auto_clear_count']."'");
           }
           if (($cpb_build_show_url != "")&($cpb_build_show_url != $cbcomp['cpb_build_show_url'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_show_url ='".$cpb_build_show_url."' WHERE cpb_build_show_url ='".$cbcomp['cpb_build_show_url']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_show_url ='".$cpb_build_show_url."' WHERE cpb_build_show_url ='".$cbcomp['cpb_build_show_url']."'");
           }
           if (($cpb_build_url_suffix != "")&($cpb_build_url_suffix != $cbcomp['cpb_build_url_suffix'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_url_suffix ='".$cpb_build_url_suffix."' WHERE cpb_build_url_suffix ='".$cbcomp['cpb_build_url_suffix']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_url_suffix ='".$cpb_build_url_suffix."' WHERE cpb_build_url_suffix ='".$cbcomp['cpb_build_url_suffix']."'");
           }
           if (($cpb_build_priority != "")&($cpb_build_priority != $cbcomp['cpb_build_priority'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_priority ='".$cpb_build_priority."' WHERE cpb_build_priority ='".$cbcomp['cpb_build_priority']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_priority ='".$cpb_build_priority."' WHERE cpb_build_priority ='".$cbcomp['cpb_build_priority']."'");
           }
           if (($cpb_build_priority_count != "")&($cpb_build_priority_count != $cbcomp['cpb_build_priority_count'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_priority_count ='".$cpb_build_priority_count."' WHERE cpb_build_priority_count ='".$cbcomp['cpb_build_priority_count']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_priority_count ='".$cpb_build_priority_count."' WHERE cpb_build_priority_count ='".$cbcomp['cpb_build_priority_count']."'");
           }
           if (($cpb_build_price_in_description != "")&($cpb_build_price_in_description != $cbcomp['cpb_build_price_in_description'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_price_in_description ='".$cpb_build_price_in_description."' WHERE cpb_build_price_in_description ='".$cbcomp['cpb_build_price_in_description']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_price_in_description ='".$cpb_build_price_in_description."' WHERE cpb_build_price_in_description ='".$cbcomp['cpb_build_price_in_description']."'");
           }
           if (($cpb_build_in_reverse != "")&($cpb_build_in_reverse != $cbcomp['cpb_build_in_reverse'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_in_reverse ='".$cpb_build_in_reverse."' WHERE cpb_build_in_reverse ='".$cbcomp['cpb_build_in_reverse']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_in_reverse ='".$cpb_build_in_reverse."' WHERE cpb_build_in_reverse ='".$cbcomp['cpb_build_in_reverse']."'");
           }
           if (($cpb_build_priority_depends_only != "")&($cpb_build_priority_depends_only != $cbcomp['cpb_build_priority_depends_only'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_priority_depends_only ='".$cpb_build_priority_depends_only."' WHERE cpb_build_priority_depends_only ='".$cbcomp['cpb_build_priority_depends_only']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_priority_depends_only ='".$cpb_build_priority_depends_only."' WHERE cpb_build_priority_depends_only ='".$cbcomp['cpb_build_priority_depends_only']."'");
           }
           if (($cpb_build_allow_built_by != "")&($cpb_build_allow_built_by != $cbcomp['cpb_build_allow_built_by'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_allow_built_by ='".$cpb_build_allow_built_by."' WHERE cpb_build_allow_built_by ='".$cbcomp['cpb_build_allow_built_by']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_allow_built_by ='".$cpb_build_allow_built_by."' WHERE cpb_build_allow_built_by ='".$cbcomp['cpb_build_allow_built_by']."'");
           }
           if (($cpb_build_preview_single != "")&($cpb_build_preview_single != $cbcomp['cpb_build_preview_single'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_preview_single ='".$cpb_build_preview_single."' WHERE cpb_build_preview_single ='".$cbcomp['cpb_build_preview_single']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_preview_single ='".$cpb_build_preview_single."' WHERE cpb_build_preview_single ='".$cbcomp['cpb_build_preview_single']."'");
           }
           if (($cpb_build_component_qty_max != "")&($cpb_build_component_qty_max != $cbcomp['cpb_build_component_qty_max'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_component_qty_max ='".$cpb_build_component_qty_max."' WHERE cpb_build_component_qty_max ='".$cbcomp['cpb_build_component_qty_max']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_component_qty_max ='".$cpb_build_component_qty_max."' WHERE cpb_build_component_qty_max ='".$cbcomp['cpb_build_component_qty_max']."'");
           }
           if (($cpb_build_product_status_default != "")&($cpb_build_product_status_default != $cbcomp['cpb_build_product_status_default'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_product_status_default ='".$cpb_build_product_status_default."' WHERE cpb_build_product_status_default ='".$cbcomp['cpb_build_product_status_default']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_product_status_default ='".$cpb_build_product_status_default."' WHERE cpb_build_product_status_default ='".$cbcomp['cpb_build_product_status_default']."'");
           }
           if (($cpb_build_product_stock_default != "")&($cpb_build_product_stock_default != $cbcomp['cpb_build_product_stock_default'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_product_stock_default ='".$cpb_build_product_stock_default."' WHERE cpb_build_product_stock_default ='".$cbcomp['cpb_build_product_stock_default']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_product_stock_default ='".$cpb_build_product_stock_default."' WHERE cpb_build_product_stock_default ='".$cbcomp['cpb_build_product_stock_default']."'");
           }
           if (($cpb_build_assembly_fee_name != "")&($cpb_build_assembly_fee_name != $cbcomp['cpb_build_assembly_fee_name'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_assembly_fee_name ='".$cpb_build_assembly_fee_name."' WHERE cpb_build_assembly_fee_name ='".$cbcomp['cpb_build_assembly_fee_name']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_assembly_fee_name ='".$cpb_build_assembly_fee_name."' WHERE cpb_build_assembly_fee_name ='".$cbcomp['cpb_build_assembly_fee_name']."'");
           }
           if (($cpb_build_product_details_ontop != "")&($cpb_build_product_details_ontop != $cbcomp['cpb_build_product_details_ontop'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_product_details_ontop ='".$cpb_build_product_details_ontop."' WHERE cpb_build_product_details_ontop ='".$cbcomp['cpb_build_product_details_ontop']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_product_details_ontop ='".$cpb_build_product_details_ontop."' WHERE cpb_build_product_details_ontop ='".$cbcomp['cpb_build_product_details_ontop']."'");
           }
           if (($cpb_build_unsort_components != "")&($cpb_build_unsort_components != $cbcomp['cpb_build_unsort_components'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_unsort_components ='".$cpb_build_unsort_components."' WHERE cpb_build_unsort_components ='".$cbcomp['cpb_build_unsort_components']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_unsort_components ='".$cpb_build_unsort_components."' WHERE cpb_build_unsort_components ='".$cbcomp['cpb_build_unsort_components']."'");
           }
           if (($cpb_popup_sort_by_price != "")&($cpb_popup_sort_by_price != $cbcomp['cpb_popup_sort_by_price'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_popup_sort_by_price ='".$cpb_popup_sort_by_price."' WHERE cpb_popup_sort_by_price ='".$cbcomp['cpb_popup_sort_by_price']."'");
+            tep_db_query("UPDATE builder_options SET cpb_popup_sort_by_price ='".$cpb_popup_sort_by_price."' WHERE cpb_popup_sort_by_price ='".$cbcomp['cpb_popup_sort_by_price']."'");
           }
           if (($cpb_build_built_by_default != "")&($cpb_build_built_by_default != $cbcomp['cpb_build_built_by_default'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_built_by_default ='".$cpb_build_built_by_default."' WHERE cpb_build_built_by_default ='".$cbcomp['cpb_build_built_by_default']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_built_by_default ='".$cpb_build_built_by_default."' WHERE cpb_build_built_by_default ='".$cbcomp['cpb_build_built_by_default']."'");
           }
           if (($cpb_build_disable_after_carted != "")&($cpb_build_disable_after_carted != $cbcomp['cpb_build_disable_after_carted'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_disable_after_carted ='".$cpb_build_disable_after_carted."' WHERE cpb_build_disable_after_carted ='".$cbcomp['cpb_build_disable_after_carted']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_disable_after_carted ='".$cpb_build_disable_after_carted."' WHERE cpb_build_disable_after_carted ='".$cbcomp['cpb_build_disable_after_carted']."'");
           }
           if (($cpb_auto_disable_time != "")&($cpb_auto_disable_time != $cbcomp['cpb_auto_disable_time'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_auto_disable_time ='".$cpb_auto_disable_time."' WHERE cpb_auto_disable_time ='".$cbcomp['cpb_auto_disable_time']."'");
+            tep_db_query("UPDATE builder_options SET cpb_auto_disable_time ='".$cpb_auto_disable_time."' WHERE cpb_auto_disable_time ='".$cbcomp['cpb_auto_disable_time']."'");
           }
           if (($cpb_build_manufacturer_id_default != "")&($cpb_build_manufacturer_id_default != $cbcomp['cpb_build_manufacturer_id_default'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_manufacturer_id_default ='".$cpb_build_manufacturer_id_default."' WHERE cpb_build_manufacturer_id_default ='".$cbcomp['cpb_build_manufacturer_id_default']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_manufacturer_id_default ='".$cpb_build_manufacturer_id_default."' WHERE cpb_build_manufacturer_id_default ='".$cbcomp['cpb_build_manufacturer_id_default']."'");
           }
           if (($cpb_build_name_suffix != "")&($cpb_build_name_suffix != $cbcomp['cpb_build_name_suffix'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_name_suffix ='".$cpb_build_name_suffix."' WHERE cpb_build_name_suffix ='".$cbcomp['cpb_build_name_suffix']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_name_suffix ='".$cpb_build_name_suffix."' WHERE cpb_build_name_suffix ='".$cbcomp['cpb_build_name_suffix']."'");
           }
           if (($cpb_build_cart_reset != "")&($cpb_build_cart_reset != $cbcomp['cpb_build_cart_reset'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_cart_reset ='".$cpb_build_cart_reset."' WHERE cpb_build_cart_reset ='".$cbcomp['cpb_build_cart_reset']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_cart_reset ='".$cpb_build_cart_reset."' WHERE cpb_build_cart_reset ='".$cbcomp['cpb_build_cart_reset']."'");
           }
           if (($cpb_build_id_in_description != "")&($cpb_build_id_in_description != $cbcomp['cpb_build_id_in_description'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_id_in_description ='".$cpb_build_id_in_description."' WHERE cpb_build_id_in_description ='".$cbcomp['cpb_build_id_in_description']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_id_in_description ='".$cpb_build_id_in_description."' WHERE cpb_build_id_in_description ='".$cbcomp['cpb_build_id_in_description']."'");
           }
           if (($cpb_build_show_category_image != "")&($cpb_build_show_category_image != $cbcomp['cpb_build_show_category_image'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_show_category_image ='".$cpb_build_show_category_image."' WHERE cpb_build_show_category_image ='".$cbcomp['cpb_build_show_category_image']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_show_category_image ='".$cpb_build_show_category_image."' WHERE cpb_build_show_category_image ='".$cbcomp['cpb_build_show_category_image']."'");
           }
           if (($cpb_build_category_image_height != "")&($cpb_build_category_image_height != $cbcomp['cpb_build_category_image_height'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_category_image_height ='".$cpb_build_category_image_height."' WHERE cpb_build_category_image_height ='".$cbcomp['cpb_build_category_image_height']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_category_image_height ='".$cpb_build_category_image_height."' WHERE cpb_build_category_image_height ='".$cbcomp['cpb_build_category_image_height']."'");
           }
           if (($cpb_build_category_image_width != "")&($cpb_build_category_image_width != $cbcomp['cpb_build_category_image_width'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_category_image_width ='".$cpb_build_category_image_width."' WHERE cpb_build_category_image_width ='".$cbcomp['cpb_build_category_image_width']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_category_image_width ='".$cpb_build_category_image_width."' WHERE cpb_build_category_image_width ='".$cbcomp['cpb_build_category_image_width']."'");
           }
           if (($cpb_build_product_tax_class_default != "")&($cpb_build_product_tax_class_default != $cbcomp['cpb_build_product_tax_class_default'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_product_tax_class_default ='".$cpb_build_product_tax_class_default."' WHERE cpb_build_product_tax_class_default ='".$cbcomp['cpb_build_product_tax_class_default']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_product_tax_class_default ='".$cpb_build_product_tax_class_default."' WHERE cpb_build_product_tax_class_default ='".$cbcomp['cpb_build_product_tax_class_default']."'");
           }
           if (($cpb_ignore_tax != "")&($cpb_ignore_tax != $cbcomp['cpb_ignore_tax'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_ignore_tax ='".$cpb_ignore_tax."' WHERE cpb_ignore_tax ='".$cbcomp['cpb_ignore_tax']."'");
+            tep_db_query("UPDATE builder_options SET cpb_ignore_tax ='".$cpb_ignore_tax."' WHERE cpb_ignore_tax ='".$cbcomp['cpb_ignore_tax']."'");
           }
           if (($cpb_build_show_tax != "")&($cpb_build_show_tax != $cbcomp['cpb_build_show_tax'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_show_tax ='".$cpb_build_show_tax."' WHERE cpb_build_show_tax ='".$cbcomp['cpb_build_show_tax']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_show_tax ='".$cpb_build_show_tax."' WHERE cpb_build_show_tax ='".$cbcomp['cpb_build_show_tax']."'");
           }
           if (($cpb_build_minimum_order != "")&($cpb_build_minimum_order != $cbcomp['cpb_build_minimum_order'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_minimum_order ='".$cpb_build_minimum_order."' WHERE cpb_build_minimum_order ='".$cbcomp['cpb_build_minimum_order']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_minimum_order ='".$cpb_build_minimum_order."' WHERE cpb_build_minimum_order ='".$cbcomp['cpb_build_minimum_order']."'");
           }
           if (($cpb_build_minimum_order_count != "")&($cpb_build_minimum_order_count != $cbcomp['cpb_build_minimum_order_count'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_minimum_order_count ='".$cpb_build_minimum_order_count."' WHERE cpb_build_minimum_order_count ='".$cbcomp['cpb_build_minimum_order_count']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_minimum_order_count ='".$cpb_build_minimum_order_count."' WHERE cpb_build_minimum_order_count ='".$cbcomp['cpb_build_minimum_order_count']."'");
           }
           if (($cpb_build_allow_image_upload != "")&($cpb_build_allow_image_upload != $cbcomp['cpb_build_allow_image_upload'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_allow_image_upload ='".$cpb_build_allow_image_upload."' WHERE cpb_build_allow_image_upload ='".$cbcomp['cpb_build_allow_image_upload']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_allow_image_upload ='".$cpb_build_allow_image_upload."' WHERE cpb_build_allow_image_upload ='".$cbcomp['cpb_build_allow_image_upload']."'");
           }
           if (($cpb_build_image_upload_size != "")&($cpb_build_image_upload_size != $cbcomp['cpb_build_image_upload_size'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_image_upload_size ='".$cpb_build_image_upload_size."' WHERE cpb_build_image_upload_size ='".$cbcomp['cpb_build_image_upload_size']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_image_upload_size ='".$cpb_build_image_upload_size."' WHERE cpb_build_image_upload_size ='".$cbcomp['cpb_build_image_upload_size']."'");
           }
           if (($cpb_build_image_upload_folder != "")&($cpb_build_image_upload_folder != $cbcomp['cpb_build_image_upload_folder'])) {
-            tep_db_query("UPDATE " . TABLE_BUILDER_OPTIONS . " SET cpb_build_image_upload_folder ='".$cpb_build_image_upload_folder."' WHERE cpb_build_image_upload_folder ='".$cbcomp['cpb_build_image_upload_folder']."'");
+            tep_db_query("UPDATE builder_options SET cpb_build_image_upload_folder ='".$cpb_build_image_upload_folder."' WHERE cpb_build_image_upload_folder ='".$cbcomp['cpb_build_image_upload_folder']."'");
           }
 
         }
@@ -549,10 +549,10 @@ INSERT INTO " . TABLE_BUILDER_OPTIONS . "
 } else { // no action
 
 // be sure the tables already exist
-  if(tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . "'"))==1) {
+  if(tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_options'"))==1) {
 
 // get options
-    $cbcomp_query = tep_db_query("select * from " . TABLE_BUILDER_OPTIONS);
+    $cbcomp_query = tep_db_query("select * from builder_options");
     while ($cbcomp = tep_db_fetch_array($cbcomp_query)) {
       $cpb_system_assembly= $cbcomp['cpb_system_assembly'];
       $cpb_assembly_osccat= $cbcomp['cpb_assembly_osccat'];
@@ -665,7 +665,7 @@ INSERT INTO " . TABLE_BUILDER_OPTIONS . "
         <tr>
 
 <?php
-if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . "'"))!=1) {
+if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_options'"))!=1) {
 ?>
           <td valign="top" colspan="2">
             <table bgcolor="red" width="100%" border="0" cellspacing="0" cellpadding="3">
@@ -1577,7 +1577,7 @@ closedir($handle);
 
 <?php
 $tax_class_array = array(array('id' => '0', 'text' => TEXT_NONE));
-$tax_class_query = tep_db_query("select tax_class_id, tax_class_title from " . TABLE_TAX_CLASS . " order by tax_class_title");
+$tax_class_query = tep_db_query("select tax_class_id, tax_class_title from tax_class order by tax_class_title");
 while ($tax_class = tep_db_fetch_array($tax_class_query)) {
   $tax_class_array[] = array('id' => $tax_class['tax_class_id'],
                              'text' => $tax_class['tax_class_title']);

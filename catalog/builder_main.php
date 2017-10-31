@@ -16,15 +16,15 @@ require('includes/application_top.php');
 //print_r($_FILES);
 require('includes/languages' . '/' . $language . '/' . 'builder_main.php');
 // get info from OSC currency tables
-$currency_symb_query = tep_db_query("select symbol_left, symbol_right, decimal_point, thousands_point, decimal_places from " . TABLE_CURRENCIES . " where code='".$currency."'");
+$currency_symb_query = tep_db_query("select symbol_left, symbol_right, decimal_point, thousands_point, decimal_places from currencies where code='".$currency."'");
 $currency_symb = tep_db_fetch_array($currency_symb_query);
 
 // check if the builder tables exist
 // if tables exist, get all category options into an array, otherwise bomb with error
-if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE '" . TABLE_BUILDER_OPTIONS . "'"))==1) {
+if (tep_db_num_rows(tep_db_query("SHOW TABLES LIKE 'builder_options'"))==1) {
 
 // get builder options
-  $cbcomp_query = tep_db_query("select * from " . TABLE_BUILDER_OPTIONS);
+  $cbcomp_query = tep_db_query("select * from builder_options");
   while ($cbcomp = tep_db_fetch_array($cbcomp_query)){
     $cpb_system_assembly= $cbcomp['cpb_system_assembly'];
     $cpb_assembly_osccat= $cbcomp['cpb_assembly_osccat'];
@@ -109,7 +109,7 @@ $cpb_build_final_image = $cpb_product_images_folder . $cpb_build_image;
 
 // get builder categories - insert them into a perfect sequential array (i.e. 1,2,3,4,etc..)
   $pcount=0;
-  $bcomp_query = tep_db_query("select * from " . TABLE_BUILDER_CATEGORIES . " ORDER BY cpb_category_id");
+  $bcomp_query = tep_db_query("select * from builder_categories ORDER BY cpb_category_id");
   while ($bcomp = tep_db_fetch_array($bcomp_query)){
     $pcshadowid[$pcount] = $bcomp['cpb_category_id'];
     $pcid[$pcount]= $pcount+1;
@@ -219,7 +219,7 @@ switch ($_GET['action'] && $_POST['p_id']) {
       for ($i = 0, $n = count($products_count); $i < $n; $i++) {
         $component_note[$i] = '';
         if ($products_count[$i] > 0) {
-          $products_query = tep_db_query("select products_status, products_name, products_weight, products_quantity, products_price, products_tax_class_id from " . TABLE_PRODUCTS_DESCRIPTION . " pd, " . TABLE_PRODUCTS . " p where p.products_id = '".$products_count[$i]."' and pd.products_id = p.products_id");
+          $products_query = tep_db_query("select products_status, products_name, products_weight, products_quantity, products_price, products_tax_class_id from products_description pd, products p where p.products_id = '".$products_count[$i]."' and pd.products_id = p.products_id");
           $products = tep_db_fetch_array($products_query);
           $components_name[$i] = strip_tags(addslashes($products['products_name']));
           $components_quantity[$i] = $products_qty[$i];
@@ -257,7 +257,7 @@ switch ($_GET['action'] && $_POST['p_id']) {
 // stock adjustment
           if ($cpb_reduce_stock) {
             $stock_left = $products['products_quantity'] - $products_qty[$i];
-            tep_db_query("update " . TABLE_PRODUCTS . " set products_quantity = '" . $stock_left . "' where products_id = '" . $products_count[$i] . "'");
+            tep_db_query("update products set products_quantity = '" . $stock_left . "' where products_id = '" . $products_count[$i] . "'");
           } else {
             $stock_left = $products['products_quantity'];
           }
@@ -265,7 +265,7 @@ switch ($_GET['action'] && $_POST['p_id']) {
 // if builder draws component out of stock then disable the product
           if (($stock_left <= 0) && ($cpb_reduce_stock)) {
             if ($cpb_build_allow_disable_product) {
-              tep_db_query("update " . TABLE_PRODUCTS . " set products_status = '0' where products_id = '" . $products_count[$i] . "'");
+              tep_db_query("update products set products_status = '0' where products_id = '" . $products_count[$i] . "'");
             }
           }
 
@@ -311,15 +311,15 @@ switch ($_GET['action'] && $_POST['p_id']) {
                                 'products_image' => tep_db_prepare_input($cpb_build_final_image),
                                 'builder_product_flag' => tep_db_prepare_input('1'),
                                 'products_date_added' => tep_db_prepare_input($products_date_added));
-        tep_db_perform(TABLE_PRODUCTS, $sql_data_array);
+        tep_db_perform('products', $sql_data_array);
 
 // recover PID and use it in the P2C insert
         $products_id = tep_db_insert_id();
-        tep_db_query("insert into " . TABLE_PRODUCTS_TO_CATEGORIES . " (products_id, categories_id) values ('" . (int)$products_id . "', '" . (int)$cpb_build_osccat . "')");
+        tep_db_query("insert into products_to_categories (products_id, categories_id) values ('" . (int)$products_id . "', '" . (int)$cpb_build_osccat . "')");
 
 // for suffixes, apply the appends as admin wants them
         if ($cpb_build_model_suffix) {
-          tep_db_query("update " . TABLE_PRODUCTS . " set products_model = '" . $cpb_build_model . '-' . $products_id . "' where products_id = '" . $products_id . "'");
+          tep_db_query("update products set products_model = '" . $cpb_build_model . '-' . $products_id . "' where products_id = '" . $products_id . "'");
         }
 
 // description, url and others
@@ -340,7 +340,7 @@ switch ($_GET['action'] && $_POST['p_id']) {
                                 'products_url' => tep_db_prepare_input($cpb_build_url),
                                 'products_id' => tep_db_prepare_input($products_id),
                                 'language_id' => tep_db_prepare_input($languages_id));
-        tep_db_perform(TABLE_PRODUCTS_DESCRIPTION, $sql_data_array);
+        tep_db_perform('products_description', $sql_data_array);
 
 // NOW INSERT EACH OF THE COMPONENTS AS ATTRIBUTES - A SPECIAL TWIST INCLUDED - REVERSE BUILDING IS ALLOWED - DUNNO WHY BUT SOMEONE....etc
 // OSCOMMERCE ATTRIBUTES HANDLING IS TO SORT BY NAME - POINTLESS REALLY - SO THE BUILDER INTRODUCES SOMETHING NOW THAT WONT EVEN BE NOTICED
@@ -365,11 +365,11 @@ switch ($_GET['action'] && $_POST['p_id']) {
           tep_redirect(tep_href_link('builder_product_info.php', 'products_id=' . $products_id));
         } else {
           if (!$cpb_build_product_status_default) {
-            tep_db_query("update " . TABLE_PRODUCTS . " set products_status = '1' where products_id = '" . $products_id . "' and products_status = '0'");
+            tep_db_query("update products set products_status = '1' where products_id = '" . $products_id . "' and products_status = '0'");
           }
           $cart->add_cart($products_id, $products_quantity, $cpb_attribute_list);
           if ($cpb_build_disable_after_carted || !$cpb_build_product_status_default) {
-            tep_db_query("update " . TABLE_PRODUCTS . " set products_status = '0' where products_id = '" . $products_id . "' and products_status = '1'");
+            tep_db_query("update products set products_status = '0' where products_id = '" . $products_id . "' and products_status = '1'");
           }
           tep_redirect(tep_href_link($goto));
         }
@@ -377,13 +377,13 @@ switch ($_GET['action'] && $_POST['p_id']) {
 
 // pre-check fail - undo the precheck process (ie. return component stock - reenable those that were disabled)
         for ($i = count($products_count), $n = 0; $i >= $n; $i--) {
-          $products_query = tep_db_query("select products_quantity, products_status from " . TABLE_PRODUCTS . " where products_id = '" . $products_count[$i] . "'");
+          $products_query = tep_db_query("select products_quantity, products_status from products where products_id = '" . $products_count[$i] . "'");
           $products = tep_db_fetch_array($products_query);
           if (($products['products_status'] != '1') && (!$cpb_build_allow_disabled) && ($cpb_build_allow_disable_product)) {
-            tep_db_query("update " . TABLE_PRODUCTS . " set products_status = '1' where products_id = '" . $products_count[$i] . "'");
+            tep_db_query("update products set products_status = '1' where products_id = '" . $products_count[$i] . "'");
           }
           $stock_left = $products['products_quantity'] + $products_qty[$i];
-          tep_db_query("update " . TABLE_PRODUCTS . " set products_quantity = '" . $stock_left . "' where products_id = '" . $products_count[$i] . "'");
+          tep_db_query("update products set products_quantity = '" . $stock_left . "' where products_id = '" . $products_count[$i] . "'");
         }
 
       } 
