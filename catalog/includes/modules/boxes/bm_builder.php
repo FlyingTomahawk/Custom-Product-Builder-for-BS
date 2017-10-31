@@ -57,16 +57,12 @@
                     if ($cpb_auto_disable_time >= 1) {
                       _disable_builds($cpb_auto_disable_time);
                     }
-
-                    $data = '<div class="ui-widget infoBoxContainer">' .
-                            '  <div class="ui-widget-header infoBoxHeading"><a href="' . tep_href_link('builder_main.php') . '">' . MODULE_BOXES_BUILDER_BOX_TITLE . '</a></div>' .
-                            '  <div class="ui-widget-content infoBoxContents">' .
-                            /*'    ' . tep_draw_form('builder', tep_href_link('builder_main.php', '', $request_type, false), 'get') . */
-                            '    <a href="' . tep_href_link('builder_main.php') . '">' . tep_image('images/' . $builder['cpb_product_builder_image'] , $builder[cpb_product_builder_name], SMALL_IMAGE_WIDTH, SMALL_IMAGE_HEIGHT) . '<br>' . $builder['cpb_product_builder_name'] . '</a>' .
-                            '  </div>' .
-                            '</div>';
-
-                    $oscTemplate->addBlock($data, $this->group);
+					
+					  ob_start();
+					  include('includes/modules/boxes/templates/builder.php');
+					  $data = ob_get_clean();
+									
+					$oscTemplate->addBlock($data, $this->group);
                 }
             }
         }
