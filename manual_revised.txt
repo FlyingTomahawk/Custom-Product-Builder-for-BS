@@ -1,0 +1,171 @@
+Custom Product Builder 2.3.3.4 V1.0
+Support Forum http://forums.oscommerce.com/topic/319216-custom-product-builder/
+Originally programmed by TENCENTS http://addons.oscommerce.com/info/6328
+
+======================================
+NEW INSTALLATION
+======================================
+
+These instructions are designed for osCommerce 2.3.3.4, modified or unmodified.
+Inspect the contents of the zip file you have received...
+
+STEP 1. Copy all contents of the 'catalog' directory to your 'catalog'.
+---------------------------------------------------------------------------
+
+STEP 2. Edit /catalog/admin/includes/database_tables.php
+--------------------------------------------------------
+
+HARD CODE definitions
+
+STEP 3. Edit /catalog/admin/includes/functions/general.php
+----------------------------------------------------------
+
+ADD AS NEW FUNCTION
+
+// Return all subcategory IDs
+// TABLES: categories
+  function tep_get_subcategories(&$subcategories_array, $parent_id = 0) {
+    $subcategories_query = tep_db_query("select categories_id from categories where parent_id = '" . (int)$parent_id . "'");
+    while ($subcategories = tep_db_fetch_array($subcategories_query)) {
+      $subcategories_array[sizeof($subcategories_array)] = $subcategories['categories_id'];
+      if ($subcategories['categories_id'] != $parent_id) {
+        tep_get_subcategories($subcategories_array, $subcategories['categories_id']);
+      }
+    }
+  }
+
+ADD AS NEW FUNCTION
+
+////
+// Return the manufacturers list in the needed language
+// TABLES: manufacturers
+  function tep_get_manufacturers($manufacturers_array = '') {
+    if (!is_array($manufacturers_array)) $manufacturers_array = array();
+
+    $manufacturers_query = tep_db_query("select manufacturers_id, manufacturers_name from manufacturers order by manufacturers_name");
+    while ($manufacturers = tep_db_fetch_array($manufacturers_query)) {
+      $manufacturers_array[] = array('id' => $manufacturers['manufacturers_id'], 'text' => $manufacturers['manufacturers_name']);
+    }
+
+    return $manufacturers_array;
+  }
+
+
+STEP 4. Edit /catalog/admin/includes/languages/english.php
+----------------------------------------------------------
+
+CREATE MODULE AND INCLUDE IT 
+
+## At the end, before the ?> tag, INSERT:
+
+// Custom Product Builder
+define('IMAGE_PRINT', 'Print');
+define('BOX_HEADING_BUILDER' ,"Custom Products");
+define('BOX_BUILDER_CATEGORIES' ,"Categories");
+define('BOX_BUILDER_DEPENDENCES' ,"Dependences");
+define('BOX_BUILDER_OPTIONS' , "Options");
+
+STEP 5. Edit /catalog/admin/includes/stylesheet.css
+---------------------------------------------------
+
+INCLUDE INSIDE THE NEW FILES?
+
+## At the end, INSERT:
+
+/* Builder matrix editor */
+.dataTableVertical { font-family: Verdana, Arial, sans-serif; font-size: 10px; font-weight : normal; text-align : left; writing-mode: tb-rl; filter: fliph flipv; }
+.dataTableVerticalTitle { font-family: Verdana, Arial, sans-serif; font-size: 10px; font-weight: normal; background-color: #b0ffb0; text-align : left; writing-mode: tb-rl; filter: fliph flipv; }
+.dataTableHorizontal { font-family: Verdana, Arial, sans-serif; font-size: 10px; font-weight : normal; }
+.dataTableHorizontalTitle { font-family: Verdana, Arial, sans-serif; font-size: 10px; font-weight: normal; background-color: #ffb0b0; }
+.dataTableWarning { font-family: Verdana, Arial, sans-serif; font-size: 10px; color: #994444; }
+.dataTableHeading { background-color: #c9c9ff; }
+.dataTableHeadingRow_c { background-color: #ffC9C9; }
+.dataTableHeadingRow_d { background-color: #C9ffc9; }
+.dataTableTitleRow { font-family: Verdana, Arial, sans-serif; font-size: 14px; color: #009900; font-weight: bold; }
+.dataTableTitleColumn { font-family: Verdana, Arial, sans-serif; font-size: 14px; color: #990000; font-weight: bold; }
+
+STEP 6. Edit /catalog/includes/application_top.php - ##### NOTE: SWITCHING FROM ADMIN TO CATALOG EDITS NOW!!!
+--------------------------------------------------
+
+ADD NEW SWITCH ACTION
+
+      // custom product builder add to cart from builder_info page
+      case 'add_build' :      if (isset($_POST['products_id']) && is_numeric($_POST['products_id'])) {
+                                if ($_POST['uncloaked_build'] == '0') {
+                                  tep_db_query("update products set products_status = '1' where products_id = '" . $_POST['products_id'] . "' and products_quantity > '" . $cart->get_quantity(tep_get_uprid($_POST['products_id'],$_POST['id'])) . "'");
+                                }
+                                $cart->add_cart($_POST['products_id'], $cart->get_quantity(tep_get_uprid($_POST['products_id'], $_POST['id']))+1, $_POST['id']);
+                                if ($_POST['disable_build'] == '1' or $_POST['uncloaked_build'] =='0') {
+                                  tep_db_query("update products set products_status = '0' where products_id = '" . $_POST['products_id'] . "'");
+                                }
+                              }
+                              tep_redirect(tep_href_link($goto, tep_get_all_get_params($parameters)));
+                              break;
+
+STEP 7. Edit /catalog/includes/database_tables.php
+---------------------------------------------------
+
+HARD CODE definitions
+
+STEP 8. Edit /catalog/product_info.php
+---------------------------------------
+## FIND: (line 17)
+
+  $product_check_query = tep_db_query("select count(*) as total from " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION . " pd where p.products_status = '1' and p.products_id = '" . (int)$_GET['products_id'] . "' and pd.products_id = p.products_id and pd.language_id = '" . (int)$languages_id . "'");
+  $product_check = tep_db_fetch_array($product_check_query);
+
+## REPLACE WITH:
+
+// BUILDER INTERVENTION - redirect to builder_product_info if this is a builder product
+  $product_check_query = tep_db_query("select p.builder_product_flag, count(*) as total from products p, products_description pd where (p.products_status = '1' or p.builder_product_flag = '1') and p.products_id = '" . (int)$_GET['products_id'] . "' and pd.products_id = p.products_id and pd.language_id = '" . (int)$languages_id . "' group by p.products_id");
+  $product_check = tep_db_fetch_array($product_check_query);
+if ($product_check['builder_product_flag'] == '1') {
+    tep_redirect(tep_href_link('builder_product_info.php?products_id=' . $_GET['products_id']));
+  }
+// END OF BUILDER INTERVENTION
+
+STEP 9. Edit /catalog/user.css
+-------------------------------------
+## At the end, INSERT:
+
+/* Custom Product Builder */
+.builder_heading {
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 13px;
+  background: #eeeef0;
+  color: #000000;
+  font-weight: bold;
+}
+
+.builder_footing {
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 13px;
+  background: #eeeef0;
+  color: #000000;
+  font-weight: bold;
+}
+
+TH {
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 13px;
+  color: #000000;
+  font-weight: bold;
+}
+/* End Custom Product Builder */
+
+STEP 10. Make sure your 'catalog/images/builder/uploads' directory is fully accessible
+--------------------------------------------------------------------------------------
+Uploaded images will be stored here, visitors need full access to this directory (CHMOD 777 / RWX).
+
+STEP 11. Open your catalog admin panel and click on 'Custom Products'.
+---------------------------------------------------------------------- 
+You should see an error message, simply click the 'update' button to complete the installation. The error
+message should go away and right at the top-left of the page a green confirmation message.
+
+STEP 12. Have a look at the GETTING STARTED guide.
+--------------------------------------------------
+There are some important things you should know and do before attempting to run the builder in the front.
+
+All Done!
+
+-- END --
